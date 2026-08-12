@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { SOURCE_MODES } from '../src/config.js';
+import { EmptyPhotoSourceError, ImmichSlideshow } from '../src/slideshow.js';
+
+const config = {
+  immich_url: 'http://immich.local:2283',
+  api_key: 'key',
+  source_mode: SOURCE_MODES.ALBUM,
+  album_id: 'album-id',
+  source_refresh_interval: 300,
+  max_assets: 20,
+  random_order: false,
+};
+
+function createClient({ assets = [] } = {}) {
+  let albumCalls = 0;
+  let previewCalls = 0;
+  return {
+    get albumCalls() {
+      return albumCalls;
+    },
+    get previewCalls() {
+      return previewCalls;
+    },
+    async getAlbum() {
+      albumCalls += 1;
+      return { albumName: 'Album', assets };
+    },
+    async getPreview(assetId) {
+      previewCalls += 1;
+      return { contentType: 'image/jpeg', buffer: Buffer.from(assetId) };
+    },
+    async testConnection() {
+      return { albumCount: 3 };
+    },
+  };
+}
+
+test('fetches only the next preview while caching the resolved album', async () => {
+  const client = createClient({
+    assets: [
+      { id: 'first', type: 'IMAGE', fileCreatedAt: '2024-01-01T00:00:00.000Z' },
+      { id: 'second', type: 'IMAGE', fileCreatedAt: '2023-01-01T00:00:00.000Z' },
+    ],
+  });
+  const slideshow = new ImmichSlideshow({
+    clientFactory: () => client,
+    imageTransformer: async (buffer) => ({ contentType: 'image/jpeg', buffer }),
+    now: () => 1_000,
+  });
+
+  const first = await slideshow.next(config);
+  const second = await slideshow.next(config);
+
+  assert.equal(first.id, 'first');
+  assert.equal(second.id, 'second');
+  assert.equal(client.albumCalls, 1);
+  assert.equal(client.previewCalls, 2);
+  assert.equal(first.image, `image/jpeg;base64,${Buffer.from('first').toString('base64')}`);
+  assert.equal(slideshow.getStatus().loadedImageCount, 2);
+});
+
+test('refreshes the source when requested explicitly', async () => {
+  let now = 0;
+  const client = createClient({ assets: [{ id: 'image', type: 'IMAGE' }] });
+  const slideshow = new ImmichSlideshow({
+    clientFactory: () => client,
+    imageTransformer: async (buffer) => ({ contentType: 'image/jpeg', buffer }),
+    now: () => now,
+  });
+
+  await slideshow.refresh(config);
+  now = 1_000;
+  await slideshow.refresh(config);
+  assert.equal(client.albumCalls, 1);
+
+  await slideshow.refresh(config, { force: true });
+  assert.equal(client.albumCalls, 2);
+});
+
+test('fails clearly when the selected source has no images', async () => {
+  const slideshow = new ImmichSlideshow({
+    clientFactory: () => createClient(),
+    imageTransformer: async (buffer) => ({ contentType: 'image/jpeg', buffer }),
+  });
+
+  await assert.rejects(slideshow.next(config), (error) => {
+    assert.ok(error instanceof EmptyPhotoSourceError);
+    assert.equal(error.code, 'EMPTY_SOURCE');
+    return true;
+  });
+});
