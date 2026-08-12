@@ -1,0 +1,146 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "Immich Slideshow",
+  "description": {
+    "en": "Streams an Immich album or memories as a Gladys dashboard camera slideshow.",
+    "fr": "Diffuse un album ou les souvenirs Immich en diaporama caméra sur le dashboard Gladys."
+  },
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/gboulvin/gladys-immich:0.1.0",
+  "gladys_version": ">=4.85.0",
+  "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg",
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": { "en": "Connect Immich", "fr": "Connecter Immich" },
+      "description": {
+        "en": "Create an Immich API key with album.read, asset.view, and memory.read permissions. The key is securely stored by Gladys and is never sent to the dashboard browser.",
+        "fr": "Créez une clé API Immich avec les permissions album.read, asset.view et memory.read. Gladys stocke cette clé de manière sécurisée ; elle n’est jamais envoyée au navigateur du dashboard."
+      },
+      "links": [
+        {
+          "url": "https://docs.immich.app/features/administration/user-settings/",
+          "label": { "en": "Immich user settings", "fr": "Paramètres utilisateur Immich" }
+        },
+        {
+          "url": "https://api.immich.app/endpoints",
+          "label": { "en": "Immich API reference", "fr": "Référence de l’API Immich" }
+        }
+      ]
+    },
+    {
+      "key": "immich_url",
+      "type": "string",
+      "label": { "en": "Immich server URL", "fr": "URL du serveur Immich" },
+      "description": {
+        "en": "For example: http://192.168.1.20:2283. The Gladys integration container must be able to reach this address.",
+        "fr": "Par exemple : http://192.168.1.20:2283. Le conteneur d’intégration Gladys doit pouvoir joindre cette adresse."
+      },
+      "placeholder": { "en": "https://immich.example.net", "fr": "https://immich.exemple.net" },
+      "required": true
+    },
+    {
+      "key": "api_key",
+      "type": "secret",
+      "label": { "en": "Immich API key", "fr": "Clé API Immich" },
+      "placeholder": { "en": "Paste the API key", "fr": "Collez la clé API" },
+      "required": true
+    },
+    {
+      "key": "source_mode",
+      "type": "select",
+      "label": { "en": "Photo source", "fr": "Source des photos" },
+      "description": {
+        "en": "Choose a specific album or Immich memories from this day in previous years.",
+        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes."
+      },
+      "required": true,
+      "default": "album",
+      "options": [
+        { "value": "album", "label": { "en": "Album", "fr": "Album" } },
+        {
+          "value": "memories",
+          "label": { "en": "Memories — on this day", "fr": "Souvenirs — ce jour-là" }
+        }
+      ]
+    },
+    {
+      "key": "album_id",
+      "type": "string",
+      "label": { "en": "Album UUID", "fr": "UUID de l’album" },
+      "description": {
+        "en": "Required only when the source is Album. Copy the UUID from the album URL in Immich; leave it empty for Memories.",
+        "fr": "Requis uniquement pour la source Album. Copiez l’UUID dans l’URL de l’album Immich ; laissez vide pour Souvenirs."
+      },
+      "placeholder": { "en": "e.g. 1033b9e2-…", "fr": "ex. 1033b9e2-…" },
+      "required": false
+    },
+    {
+      "key": "slide_interval",
+      "type": "number",
+      "label": { "en": "Slide interval (seconds)", "fr": "Intervalle entre les photos (secondes)" },
+      "description": {
+        "en": "How long each image stays on the dashboard camera. The minimum respects Gladys camera-channel limits.",
+        "fr": "Durée d’affichage de chaque image sur la caméra du dashboard. Le minimum respecte les limites du canal caméra Gladys."
+      },
+      "required": true,
+      "default": 60,
+      "min": 10,
+      "max": 3600
+    },
+    {
+      "key": "source_refresh_interval",
+      "type": "number",
+      "label": {
+        "en": "Source refresh interval (seconds)",
+        "fr": "Intervalle d’actualisation de la source (secondes)"
+      },
+      "description": {
+        "en": "How often the integration asks Immich again for the album or today’s memories. Existing slides continue between refreshes.",
+        "fr": "Fréquence à laquelle l’intégration redemande l’album ou les souvenirs du jour à Immich. Les diapositives existantes défilent entre deux actualisations."
+      },
+      "required": true,
+      "default": 3600,
+      "min": 300,
+      "max": 86400
+    },
+    {
+      "key": "max_assets",
+      "type": "number",
+      "label": { "en": "Maximum images", "fr": "Nombre maximal d’images" },
+      "description": {
+        "en": "Caps large albums to keep the integration responsive. The newest images are selected unless random order is enabled.",
+        "fr": "Limite les grands albums pour préserver la réactivité. Les images les plus récentes sont sélectionnées, sauf si l’ordre aléatoire est activé."
+      },
+      "required": true,
+      "default": 200,
+      "min": 1,
+      "max": 500
+    },
+    {
+      "key": "random_order",
+      "type": "boolean",
+      "label": { "en": "Randomize images", "fr": "Mélanger les images" },
+      "description": {
+        "en": "When disabled, the slideshow starts with the most recent image.",
+        "fr": "Lorsqu’il est désactivé, le diaporama commence par l’image la plus récente."
+      },
+      "required": false,
+      "default": false
+    }
+  ],
+  "actions": [
+    {
+      "key": "test_connection",
+      "label": { "en": "Test Immich connection", "fr": "Tester la connexion Immich" },
+      "timeout_seconds": 30
+    },
+    {
+      "key": "refresh_now",
+      "label": { "en": "Refresh slideshow now", "fr": "Actualiser le diaporama maintenant" },
+      "timeout_seconds": 30
+    }
+  ]
+}
