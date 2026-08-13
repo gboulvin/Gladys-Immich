@@ -6,8 +6,8 @@
     "en": "Streams an Immich album or memories as a Gladys dashboard camera slideshow.",
     "fr": "Diffuse un album ou les souvenirs Immich en diaporama caméra sur le dashboard Gladys."
   },
-  "version": "0.1.2",
-  "docker_image": "ghcr.io/gboulvin/gladys-immich:0.1.2",
+  "version": "0.1.3",
+  "docker_image": "ghcr.io/gboulvin/gladys-immich:0.1.3",
   "gladys_version": ">=4.85.0",
   "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg",
   "config_schema": [
