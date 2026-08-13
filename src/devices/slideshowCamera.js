@@ -86,6 +86,10 @@ export const slideshowCamera = {
           read_only: true,
           has_feedback: false,
           keep_history: false,
+          // Gladys requires numeric bounds for every DeviceFeature, including
+          // camera images carried by the dedicated image channel.
+          min: 0,
+          max: 1,
         },
       ],
     };
