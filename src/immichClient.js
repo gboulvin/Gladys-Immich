@@ -151,10 +151,17 @@ export class ImmichClient {
    * A cap matches the integration configuration maximum and avoids loading an
    * entire large album before the slideshow starts.
    */
-  async getAlbumAssets(albumId, { size = MAX_ALBUM_ASSETS } = {}) {
+  async getAlbumAssets(albumIds, { size = MAX_ALBUM_ASSETS } = {}) {
+    const ids = [...new Set((Array.isArray(albumIds) ? albumIds : [albumIds]).filter(Boolean))];
+    if (ids.length === 0) {
+      throw new ImmichApiError('At least one album ID is required to search album assets.', {
+        code: 'INVALID_ALBUM_IDS',
+      });
+    }
+
     const payload = await this.request('/search/metadata', {
       body: {
-        albumIds: [albumId],
+        albumIds: ids,
         size: Math.min(Math.max(1, Number(size) || MAX_ALBUM_ASSETS), MAX_ALBUM_ASSETS),
         page: 1,
         withExif: true,
