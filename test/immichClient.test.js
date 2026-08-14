@@ -77,3 +77,34 @@ test('rejects non-image preview responses', async () => {
 
   await assert.rejects(client.getPreview('asset-1'), (error) => error.code === 'INVALID_IMAGE');
 });
+
+test('retrieves album assets through the metadata-search endpoint', async () => {
+  const client = new ImmichClient({
+    baseUrl: 'https://immich.example.test/library',
+    apiKey: 'key',
+    fetchImpl: async (url, options) => {
+      assert.equal(url.pathname, '/library/api/search/metadata');
+      assert.equal(options.method, 'POST');
+      assert.equal(options.headers['x-api-key'], 'key');
+      assert.equal(options.headers['content-type'], 'application/json');
+      assert.deepEqual(JSON.parse(options.body), {
+        albumIds: ['album-1'],
+        size: 25,
+        page: 1,
+        withExif: true,
+      });
+      return jsonResponse({
+        assets: {
+          count: 1,
+          items: [{ id: 'asset-1', type: 'IMAGE' }],
+          nextPage: null,
+          total: 1,
+        },
+      });
+    },
+  });
+
+  const assets = await client.getAlbumAssets('album-1', { size: 25 });
+
+  assert.deepEqual(assets, [{ id: 'asset-1', type: 'IMAGE' }]);
+});
