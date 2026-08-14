@@ -108,3 +108,19 @@ test('retrieves album assets through the metadata-search endpoint', async () => 
 
   assert.deepEqual(assets, [{ id: 'asset-1', type: 'IMAGE' }]);
 });
+
+test('retrieves the union of multiple album IDs in one metadata search', async () => {
+  const client = new ImmichClient({
+    baseUrl: 'https://immich.example.test',
+    apiKey: 'key',
+    fetchImpl: async (_url, options) => {
+      const body = JSON.parse(options.body);
+      assert.deepEqual(body.albumIds, ['album-1', 'album-2']);
+      return jsonResponse({ assets: { items: [] } });
+    },
+  });
+
+  const assets = await client.getAlbumAssets(['album-1', 'album-2', 'album-1']);
+
+  assert.deepEqual(assets, []);
+});
