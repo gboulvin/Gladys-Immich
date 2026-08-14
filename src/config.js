@@ -16,10 +16,12 @@ export const DEFAULT_CONFIG = Object.freeze({
   api_key: '',
   source_mode: SOURCE_MODES.ALBUM,
   album_id: '',
+  album_ids: [],
   slide_interval: 60,
   source_refresh_interval: 3_600,
   max_assets: 200,
   random_order: false,
+  show_caption: false,
 });
 
 // Gladys camera images are capped at 12 updates/minute; keep a margin over 5 s.
@@ -59,6 +61,18 @@ function normalizeUrl(value) {
   }
 }
 
+/** Parse a comma- or line-separated album list while preserving input order. */
+export function normalizeAlbumIds(value) {
+  const candidates = Array.isArray(value) ? value : [value];
+  const ids = candidates.flatMap((candidate) =>
+    String(candidate ?? '')
+      .split(/[\n,;]+/)
+      .map((id) => id.trim())
+      .filter(Boolean),
+  );
+  return [...new Set(ids)];
+}
+
 /**
  * Merge user-entered values with safe defaults and normalize every type.
  * @param {Record<string, unknown>} raw Raw config returned by the Gladys SDK.
@@ -68,12 +82,16 @@ export function normalizeConfig(raw = {}) {
   const sourceMode =
     raw.source_mode === SOURCE_MODES.MEMORIES ? SOURCE_MODES.MEMORIES : SOURCE_MODES.ALBUM;
 
+  const albumIds = normalizeAlbumIds(raw.album_id);
+
   return {
     ...DEFAULT_CONFIG,
     immich_url: normalizeUrl(raw.immich_url),
     api_key: typeof raw.api_key === 'string' ? raw.api_key.trim() : '',
     source_mode: sourceMode,
-    album_id: typeof raw.album_id === 'string' ? raw.album_id.trim() : '',
+    // Keep the historical key so existing Gladys configurations remain usable.
+    album_id: albumIds.join(', '),
+    album_ids: albumIds,
     slide_interval: clampInteger(
       raw.slide_interval,
       DEFAULT_CONFIG.slide_interval,
@@ -93,6 +111,7 @@ export function normalizeConfig(raw = {}) {
       MAX_MAX_ASSETS,
     ),
     random_order: raw.random_order === true || raw.random_order === 'true',
+    show_caption: raw.show_caption === true || raw.show_caption === 'true',
   };
 }
 
@@ -122,10 +141,10 @@ export function validateConfig(config) {
   if (connectionProblem) {
     return connectionProblem;
   }
-  if (config.source_mode === SOURCE_MODES.ALBUM && !config.album_id) {
+  if (config.source_mode === SOURCE_MODES.ALBUM && config.album_ids.length === 0) {
     return {
-      en: 'Enter the UUID of the Immich album to display.',
-      fr: 'Saisissez l’UUID de l’album Immich à afficher.',
+      en: 'Enter at least one Immich album UUID to display.',
+      fr: 'Saisissez au moins un UUID d’album Immich à afficher.',
     };
   }
   return null;
