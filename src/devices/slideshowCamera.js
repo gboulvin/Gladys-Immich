@@ -12,7 +12,7 @@ import {
   DEVICE_FEATURE_CATEGORIES,
   DEVICE_FEATURE_TYPES,
 } from '@gladysassistant/integration-sdk';
-import { validateConfig } from '../config.js';
+import { validateConfig, validateConnectionConfig } from '../config.js';
 import { EmptyPhotoSourceError, ImmichSlideshow } from '../slideshow.js';
 
 const DEVICE_TYPE = 'camera';
@@ -47,13 +47,20 @@ function errorMessage(error) {
   };
 }
 
-function assertConfigured(config) {
-  const problem = validateConfig(config);
+function throwConfigProblem(problem) {
   if (problem) {
     const error = new Error(problem.en);
     error.localizedMessage = problem;
     throw error;
   }
+}
+
+function assertConfigured(config) {
+  throwConfigProblem(validateConfig(config));
+}
+
+function assertConnectionConfigured(config) {
+  throwConfigProblem(validateConnectionConfig(config));
 }
 
 async function publishNextSlide(gladys, config) {
@@ -144,6 +151,24 @@ export const slideshowCamera = {
     return {
       en: `Immich connection successful. ${albumCount} album${albumCount === 1 ? '' : 's'} found.`,
       fr: `Connexion Immich réussie. ${albumCount} album${albumCount === 1 ? '' : 's'} trouvé${albumCount === 1 ? '' : 's'}.`,
+    };
+  },
+
+  async listAlbums(_gladys, { config }) {
+    assertConnectionConfigured(config);
+    const albums = await slideshow.listAlbums(config);
+    const displayedAlbums = albums.slice(0, 50);
+    const lines = displayedAlbums.map(
+      (album) => `• ${album.name} — ${album.id}${album.assetCount ? ` (${album.assetCount})` : ''}`,
+    );
+    const suffix =
+      albums.length > displayedAlbums.length
+        ? `\n… +${albums.length - displayedAlbums.length}`
+        : '';
+
+    return {
+      en: `Found ${albums.length} album${albums.length === 1 ? '' : 's'}. Copy the UUID of the chosen album:\n${lines.join('\n')}${suffix}`,
+      fr: `${albums.length} album${albums.length === 1 ? '' : 's'} trouvé${albums.length === 1 ? '' : 's'}. Copiez l’UUID de l’album choisi :\n${lines.join('\n')}${suffix}`,
     };
   },
 
