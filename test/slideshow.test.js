@@ -8,6 +8,7 @@ const config = {
   api_key: 'key',
   source_mode: SOURCE_MODES.ALBUM,
   album_id: 'album-id',
+  album_ids: ['album-id'],
   source_refresh_interval: 300,
   max_assets: 20,
   random_order: false,
@@ -27,8 +28,8 @@ function createClient({ assets = [] } = {}) {
       albumCalls += 1;
       return { albumName: 'Album', assetCount: assets.length };
     },
-    async getAlbumAssets(albumId, { size }) {
-      assert.equal(albumId, 'album-id');
+    async getAlbumAssets(albumIds, { size }) {
+      assert.deepEqual(albumIds, ['album-id']);
       assert.equal(size, config.max_assets);
       return assets;
     },
@@ -105,7 +106,34 @@ test('lists available albums before an album UUID is selected', async () => {
   };
   const slideshow = new ImmichSlideshow({ clientFactory: () => client });
 
-  const albums = await slideshow.listAlbums({ ...config, album_id: '' });
+  const albums = await slideshow.listAlbums({ ...config, album_id: '', album_ids: [] });
 
   assert.deepEqual(albums, [{ id: 'album-1', name: 'Family', assetCount: 42 }]);
+});
+
+test('forwards an Immich caption to the renderer only when enabled', async () => {
+  const client = {
+    async getAlbum() {
+      return { albumName: 'Album' };
+    },
+    async getAlbumAssets() {
+      return [{ id: 'image', type: 'IMAGE', description: 'Sunset at home' }];
+    },
+    async getPreview() {
+      return { contentType: 'image/jpeg', buffer: Buffer.from('image') };
+    },
+  };
+  const captions = [];
+  const slideshow = new ImmichSlideshow({
+    clientFactory: () => client,
+    imageTransformer: async (buffer, options) => {
+      captions.push(options.caption);
+      return { contentType: 'image/jpeg', buffer };
+    },
+  });
+
+  await slideshow.next({ ...config, show_caption: false });
+  await slideshow.next({ ...config, show_caption: true });
+
+  assert.deepEqual(captions, ['', 'Sunset at home']);
 });
