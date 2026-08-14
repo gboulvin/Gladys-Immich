@@ -73,6 +73,7 @@ gladys.onGetImage(async (device) => {
 
 // Actions rendered in the Gladys Configuration tab.
 gladys.onAction('test_connection', () => DEVICE_BLUEPRINTS[0].testConnection(gladys, { config }));
+gladys.onAction('list_albums', () => DEVICE_BLUEPRINTS[0].listAlbums(gladys, { config }));
 gladys.onAction('refresh_now', () => DEVICE_BLUEPRINTS[0].refreshNow(gladys, { config }));
 
 // A change of source, key, or timing restarts the loop using the new settings.
