@@ -28,8 +28,8 @@ test('resolves album images most-recent first, filters videos and enforces the c
     async getAlbum() {
       return { albumName: 'Summer', assetCount: 3 };
     },
-    async getAlbumAssets(albumId, { size }) {
-      assert.equal(albumId, 'album-id');
+    async getAlbumAssets(albumIds, { size }) {
+      assert.deepEqual(albumIds, ['album-id']);
       assert.equal(size, 1);
       return [olderImage, video, recentImage];
     },
@@ -38,6 +38,7 @@ test('resolves album images most-recent first, filters videos and enforces the c
   const result = await provider.resolve({
     source_mode: SOURCE_MODES.ALBUM,
     album_id: 'album-id',
+    album_ids: ['album-id'],
     random_order: false,
     max_assets: 1,
   });
@@ -70,4 +71,34 @@ test('flattens and deduplicates on-this-day memory assets', async () => {
     new Set(['image-old', 'image-recent']),
   );
   assert.equal(assetsFromMemories([{ assets: [recentImage] }]).length, 1);
+});
+
+test('merges multiple albums, preserves their names and deduplicates shared photos', async () => {
+  const client = {
+    async getAlbum(albumId) {
+      return {
+        albumName: albumId === 'album-family' ? 'Family' : 'Holidays',
+      };
+    },
+    async getAlbumAssets(albumIds, { size }) {
+      assert.deepEqual(albumIds, ['album-family', 'album-holidays']);
+      assert.equal(size, 10);
+      return [olderImage, recentImage, { ...recentImage }];
+    },
+  };
+  const provider = new ImmichPhotoProvider({ client, locale: 'en-GB' });
+
+  const result = await provider.resolve({
+    source_mode: SOURCE_MODES.ALBUM,
+    album_ids: ['album-family', 'album-holidays'],
+    random_order: false,
+    max_assets: 10,
+  });
+
+  assert.equal(result.sourceName, 'Albums — Family, Holidays');
+  assert.equal(result.totalImageCount, 2);
+  assert.deepEqual(
+    result.photos.map((photo) => photo.id),
+    ['image-recent', 'image-old'],
+  );
 });
