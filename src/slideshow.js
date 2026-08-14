@@ -78,6 +78,12 @@ export class ImmichSlideshow {
     return client.testConnection();
   }
 
+  async listAlbums(config) {
+    const client = this.clientFactory(config);
+    const provider = new ImmichPhotoProvider({ client });
+    return provider.listAlbums();
+  }
+
   async refresh(config, { force = false } = {}) {
     const newKey = sourceKey(config);
     const mustRefresh = force || newKey !== this.key || !this.provider || this.isStale(config);
