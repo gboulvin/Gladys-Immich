@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 const REQUEST_TIMEOUT_MS = 15_000;
+const MAX_ALBUM_ASSETS = 500;
 
 export class ImmichApiError extends Error {
   constructor(message, { status, code, cause } = {}) {
@@ -18,7 +19,10 @@ export class ImmichApiError extends Error {
 }
 
 function urlFor(baseUrl, path, query = {}) {
-  const url = new URL(`/api${path}`, `${baseUrl}/`);
+  // Keep an optional reverse-proxy prefix (for example /immich) instead of
+  // resolving `/api` from the host root.
+  const root = String(baseUrl).replace(/\/+$/, '');
+  const url = new URL(`${root}/api${path}`);
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));
@@ -37,9 +41,19 @@ function errorMessageFor(status, fallback) {
   return fallback;
 }
 
+function extractSearchAssets(payload) {
+  const assets = payload?.assets?.items ?? payload?.assets ?? payload?.items;
+  if (!Array.isArray(assets)) {
+    throw new ImmichApiError('Immich returned an invalid album asset list.', {
+      code: 'INVALID_ALBUM_ASSETS',
+    });
+  }
+  return assets;
+}
+
 /**
- * Client for the endpoints required by the v1 slideshow:
- * albums, memories and preview thumbnails.
+ * Client for the endpoints required by the slideshow: albums, asset search,
+ * memories and preview thumbnails.
  */
 export class ImmichClient {
   constructor({ baseUrl, apiKey, fetchImpl = fetch }) {
@@ -48,14 +62,17 @@ export class ImmichClient {
     this.fetch = fetchImpl;
   }
 
-  async request(path, { query, responseType = 'json' } = {}) {
+  async request(path, { query, body, responseType = 'json' } = {}) {
     let response;
     try {
       response = await this.fetch(urlFor(this.baseUrl, path, query), {
+        method: body === undefined ? 'GET' : 'POST',
         headers: {
           'x-api-key': this.apiKey,
           accept: responseType === 'json' ? 'application/json' : 'image/*',
+          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
         },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch (cause) {
@@ -126,6 +143,24 @@ export class ImmichClient {
 
   async getAlbum(albumId) {
     return this.request(`/albums/${encodeURIComponent(albumId)}`);
+  }
+
+  /**
+   * Immich v2 album responses contain album metadata only. Assets therefore
+   * come from the stable metadata-search endpoint filtered by `albumIds`.
+   * A cap matches the integration configuration maximum and avoids loading an
+   * entire large album before the slideshow starts.
+   */
+  async getAlbumAssets(albumId, { size = MAX_ALBUM_ASSETS } = {}) {
+    const payload = await this.request('/search/metadata', {
+      body: {
+        albumIds: [albumId],
+        size: Math.min(Math.max(1, Number(size) || MAX_ALBUM_ASSETS), MAX_ALBUM_ASSETS),
+        page: 1,
+        withExif: true,
+      },
+    });
+    return extractSearchAssets(payload);
   }
 
   /** Retrieve only on-this-day memories and let Immich calculate today locally. */
