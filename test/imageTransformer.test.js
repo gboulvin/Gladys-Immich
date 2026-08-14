@@ -3,7 +3,9 @@ import test from 'node:test';
 import sharp from 'sharp';
 import {
   asGladysCameraImage,
+  ImageSizeError,
   MAX_CAMERA_IMAGE_BYTES,
+  MAX_CAMERA_IMAGE_STRING_LENGTH,
   toCameraImage,
 } from '../src/imageTransformer.js';
 
@@ -18,9 +20,18 @@ test('converts an Immich preview to a compact JPEG camera payload', async () => 
 
   assert.equal(image.contentType, 'image/jpeg');
   assert.ok(image.buffer.length <= MAX_CAMERA_IMAGE_BYTES);
-  assert.match(asGladysCameraImage(image), /^image\/jpeg;base64,/);
+  const cameraPayload = asGladysCameraImage(image);
+  assert.match(cameraPayload, /^image\/jpeg;base64,/);
+  assert.ok(cameraPayload.length <= MAX_CAMERA_IMAGE_STRING_LENGTH);
 
   const metadata = await sharp(image.buffer).metadata();
   assert.equal(metadata.format, 'jpeg');
   assert.ok(metadata.width <= 1280);
+});
+
+test('rejects a Base64 camera payload larger than the SDK limit', () => {
+  assert.throws(
+    () => asGladysCameraImage({ contentType: 'image/jpeg', buffer: Buffer.alloc(120 * 1024) }),
+    ImageSizeError,
+  );
 });
