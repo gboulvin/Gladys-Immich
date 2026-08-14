@@ -28,8 +28,8 @@ test('resolves album images most-recent first, filters videos and enforces the c
     async getAlbum() {
       return { albumName: 'Summer', assetCount: 3 };
     },
-    async getAlbumAssets(albumIds, { size }) {
-      assert.deepEqual(albumIds, ['album-id']);
+    async getAlbumAssets(albumId, { size }) {
+      assert.equal(albumId, 'album-id');
       assert.equal(size, 1);
       return [olderImage, video, recentImage];
     },
@@ -80,10 +80,9 @@ test('merges multiple albums, preserves their names and deduplicates shared phot
         albumName: albumId === 'album-family' ? 'Family' : 'Holidays',
       };
     },
-    async getAlbumAssets(albumIds, { size }) {
-      assert.deepEqual(albumIds, ['album-family', 'album-holidays']);
+    async getAlbumAssets(albumId, { size }) {
       assert.equal(size, 10);
-      return [olderImage, recentImage, { ...recentImage }];
+      return albumId === 'album-family' ? [olderImage, recentImage] : [{ ...recentImage }];
     },
   };
   const provider = new ImmichPhotoProvider({ client, locale: 'en-GB' });
