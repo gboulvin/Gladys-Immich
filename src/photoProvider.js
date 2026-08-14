@@ -114,14 +114,17 @@ export class ImmichPhotoProvider {
       assets = assetsFromMemories(memories);
       sourceName = 'Memories — on this day';
     } else {
-      const album = await this.client.getAlbum(config.album_id);
-      sourceName = album.albumName ?? config.album_id;
+      const albumIds = config.album_ids;
+      const albums = await Promise.all(albumIds.map((albumId) => this.client.getAlbum(albumId)));
+      const albumNames = albums.map((album, index) => album.albumName ?? albumIds[index]);
+      sourceName = albumNames.length === 1 ? albumNames[0] : `Albums — ${albumNames.join(', ')}`;
+
       try {
-        assets = await this.client.getAlbumAssets(config.album_id, { size: config.max_assets });
+        assets = await this.client.getAlbumAssets(albumIds, { size: config.max_assets });
       } catch (error) {
-        // Older Immich servers returned the assets inline on the album object.
+        // Older Immich servers returned the assets inline on each album object.
         // Keep that compatibility path, but do not hide modern API failures.
-        const legacyAssets = asArray(album.assets);
+        const legacyAssets = albums.flatMap((album) => asArray(album.assets));
         if (error?.status === 404 && legacyAssets.length > 0) {
           assets = legacyAssets;
         } else {
