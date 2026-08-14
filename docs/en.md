@@ -10,17 +10,18 @@ The integration is designed for Gladys **4.85.0 or newer**. It uses the establis
 
 You need a reachable Immich server and an API key created in **Immich → Account settings → API keys**. Grant the key the following least-privilege permissions:
 
-| Permission    | Why it is needed                                    |
-| ------------- | --------------------------------------------------- |
-| `album.read`  | Lists albums and reads the chosen album.            |
-| `asset.view`  | Downloads a preview image for the dashboard camera. |
-| `memory.read` | Reads the optional “on this day” memory source.     |
+| Permission    | Why it is needed                                     |
+| ------------- | ---------------------------------------------------- |
+| `album.read`  | Lists albums and reads the chosen album.             |
+| `asset.read`  | Searches the assets belonging to the selected album. |
+| `asset.view`  | Downloads a preview image for the dashboard camera.  |
+| `memory.read` | Reads the optional “on this day” memory source.      |
 
 The Gladys container must be able to reach the URL entered in the configuration form. For a server on your local network, use its LAN address and Immich port, for example `http://192.168.1.20:2283`. Do not use `localhost`: it refers to the isolated integration container, not to the Gladys host or the Immich server.
 
 ## Setup
 
-Open **Integrations → Immich Slideshow → Configuration** and enter the server URL and API key. Select **Album** or **Memories — on this day**. For an album, copy its UUID from the URL shown by Immich and paste it in **Album UUID**. The button **Test Immich connection** confirms that Gladys can list albums with the configured key.
+Open **Integrations → Immich Slideshow → Configuration** and enter the server URL and API key. Select **Album** or **Memories — on this day**. For an album, click **List Immich albums** after entering the server URL and API key. The action returns each album name, UUID and asset count; copy the UUID of your chosen album into **Album UUID**. The button **Test Immich connection** confirms that Gladys can list albums with the configured key.
 
 Choose the slide interval, how often the source list is refreshed, and the maximum number of images to keep. The source refresh is deliberately independent from the slide interval: a large album is listed only periodically while individual preview images are downloaded only when they are displayed. Videos are excluded. By default, the newest images appear first; enable random order to shuffle each refreshed list.
 
@@ -32,7 +33,7 @@ The API key is declared as a Gladys `secret`, so it is securely stored and is ne
 
 ## Troubleshooting
 
-If the connection test reports an invalid key or permissions, recreate an Immich API key with the three permissions listed above. If the server is unreachable, verify the URL from the Gladys host network and make sure a reverse proxy, firewall or Docker network does not prevent the external-integration container from reaching Immich. An empty album or an empty memory collection is a normal state; add photos or choose another source. The integration log in the Gladys Configuration tab contains the HTTP-level failure category without exposing your API key.
+If the connection test reports an invalid key or permissions, recreate an Immich API key with the four permissions listed above. If an album is reported as empty while it contains photos, update to this release: newer Immich versions expose album metadata separately from their assets, which the integration now retrieves through the album-filtered metadata search API. If the server is unreachable, verify the URL from the Gladys host network and make sure a reverse proxy, firewall or Docker network does not prevent the external-integration container from reaching Immich. An empty album or an empty memory collection is a normal state; add photos or choose another source. The integration log in the Gladys Configuration tab contains the HTTP-level failure category without exposing your API key.
 
 ## Current dashboard model and future photo widget
 
