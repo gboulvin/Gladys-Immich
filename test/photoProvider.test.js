@@ -26,7 +26,12 @@ test('builds captions only from available Immich metadata', () => {
 test('resolves album images most-recent first, filters videos and enforces the cap', async () => {
   const client = {
     async getAlbum() {
-      return { albumName: 'Summer', assets: [olderImage, video, recentImage] };
+      return { albumName: 'Summer', assetCount: 3 };
+    },
+    async getAlbumAssets(albumId, { size }) {
+      assert.equal(albumId, 'album-id');
+      assert.equal(size, 1);
+      return [olderImage, video, recentImage];
     },
   };
   const provider = new ImmichPhotoProvider({ client, locale: 'en-GB' });
