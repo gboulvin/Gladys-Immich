@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_CONFIG, normalizeConfig, SOURCE_MODES, validateConfig } from '../src/config.js';
+import {
+  DEFAULT_CONFIG,
+  normalizeConfig,
+  SOURCE_MODES,
+  validateConfig,
+  validateConnectionConfig,
+} from '../src/config.js';
 
 test('normalizes Immich URL, booleans and numeric limits', () => {
   const config = normalizeConfig({
@@ -46,6 +52,7 @@ test('explains the first missing required setting', () => {
     source_mode: SOURCE_MODES.ALBUM,
   });
   assert.match(validateConfig(withoutAlbum).fr, /UUID/);
+  assert.equal(validateConnectionConfig(withoutAlbum), null);
 
   const memories = normalizeConfig({
     immich_url: 'http://immich.local:2283',
