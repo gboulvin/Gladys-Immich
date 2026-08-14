@@ -25,7 +25,12 @@ function createClient({ assets = [] } = {}) {
     },
     async getAlbum() {
       albumCalls += 1;
-      return { albumName: 'Album', assets };
+      return { albumName: 'Album', assetCount: assets.length };
+    },
+    async getAlbumAssets(albumId, { size }) {
+      assert.equal(albumId, 'album-id');
+      assert.equal(size, config.max_assets);
+      return assets;
     },
     async getPreview(assetId) {
       previewCalls += 1;
@@ -90,4 +95,17 @@ test('fails clearly when the selected source has no images', async () => {
     assert.equal(error.code, 'EMPTY_SOURCE');
     return true;
   });
+});
+
+test('lists available albums before an album UUID is selected', async () => {
+  const client = {
+    async listAlbums() {
+      return [{ id: 'album-1', albumName: 'Family', assetCount: 42 }];
+    },
+  };
+  const slideshow = new ImmichSlideshow({ clientFactory: () => client });
+
+  const albums = await slideshow.listAlbums({ ...config, album_id: '' });
+
+  assert.deepEqual(albums, [{ id: 'album-1', name: 'Family', assetCount: 42 }]);
 });
