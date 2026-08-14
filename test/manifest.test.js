@@ -30,14 +30,15 @@ test('keeps manifest defaults aligned with runtime defaults', () => {
   }
 });
 
-test('protects the Immich API key and defines both runtime actions', () => {
+test('protects the Immich API key and defines the runtime actions', () => {
   const apiKey = manifest.config_schema.find((field) => field.key === 'api_key');
   assert.equal(apiKey.type, 'secret');
   assert.equal(apiKey.required, true);
+  assert.match(manifest.config_schema[0].description.en, /asset\.read/);
 
   assert.deepEqual(
     manifest.actions.map((action) => action.key),
-    ['test_connection', 'refresh_now'],
+    ['test_connection', 'list_albums', 'refresh_now'],
   );
 });
 
