@@ -1,6 +1,6 @@
 {
   "name": "gladys-integration-immich-slideshow",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Immich album and memories slideshow for the Gladys Assistant dashboard camera.",
   "type": "module",
