@@ -10,8 +10,9 @@
 
 FROM node:24-alpine
 
-# dumb-init: handles signals (SIGTERM) correctly for a graceful shutdown.
-RUN apk add --no-cache dumb-init
+# dumb-init handles signals (SIGTERM); Fontconfig and DejaVu provide the
+# deterministic system font required by Sharp when rendering optional captions.
+RUN apk add --no-cache dumb-init fontconfig ttf-dejavu
 
 WORKDIR /app
 
