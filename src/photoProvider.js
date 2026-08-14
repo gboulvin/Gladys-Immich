@@ -115,8 +115,19 @@ export class ImmichPhotoProvider {
       sourceName = 'Memories — on this day';
     } else {
       const album = await this.client.getAlbum(config.album_id);
-      assets = asArray(album.assets);
       sourceName = album.albumName ?? config.album_id;
+      try {
+        assets = await this.client.getAlbumAssets(config.album_id, { size: config.max_assets });
+      } catch (error) {
+        // Older Immich servers returned the assets inline on the album object.
+        // Keep that compatibility path, but do not hide modern API failures.
+        const legacyAssets = asArray(album.assets);
+        if (error?.status === 404 && legacyAssets.length > 0) {
+          assets = legacyAssets;
+        } else {
+          throw error;
+        }
+      }
     }
 
     // Albums and memory groups can overlap. Preserve just one entry per UUID.
