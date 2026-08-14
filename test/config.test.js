@@ -17,6 +17,7 @@ test('normalizes Immich URL, booleans and numeric limits', () => {
     source_refresh_interval: '999999',
     max_assets: '999',
     random_order: 'true',
+    show_caption: 'true',
   });
 
   assert.equal(config.immich_url, 'https://immich.example.test');
@@ -26,6 +27,7 @@ test('normalizes Immich URL, booleans and numeric limits', () => {
   assert.equal(config.source_refresh_interval, 86_400);
   assert.equal(config.max_assets, 500);
   assert.equal(config.random_order, true);
+  assert.equal(config.show_caption, true);
 });
 
 test('falls back to safe defaults for malformed settings', () => {
@@ -60,4 +62,13 @@ test('explains the first missing required setting', () => {
     source_mode: SOURCE_MODES.MEMORIES,
   });
   assert.equal(validateConfig(memories), null);
+});
+
+test('normalizes a comma- or line-separated list of album UUIDs', () => {
+  const config = normalizeConfig({
+    album_id: 'album-one, album-two\nalbum-one; album-three',
+  });
+
+  assert.deepEqual(config.album_ids, ['album-one', 'album-two', 'album-three']);
+  assert.equal(config.album_id, 'album-one, album-two, album-three');
 });
