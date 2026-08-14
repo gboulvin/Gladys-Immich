@@ -40,7 +40,7 @@ La séparation entre le client HTTP, la résolution de la source et le moteur de
 
 ## Configuration utilisateur
 
-Créez dans Immich une clé API disposant des permissions `album.read`, `asset.view` et `memory.read`. Dans Gladys, ouvrez l’intégration puis entrez l’URL de votre serveur, par exemple `http://192.168.1.20:2283`, et la clé API. Pour un album, copiez son UUID depuis l’URL de l’album dans Immich. Évitez `localhost`, qui désigne le conteneur isolé de l’intégration et non votre serveur Immich.
+Créez dans Immich une clé API disposant des permissions `album.read`, `asset.read`, `asset.view` et `memory.read`. Dans Gladys, ouvrez l’intégration puis entrez l’URL de votre serveur, par exemple `http://192.168.1.20:2283`, et la clé API. Pour un album, utilisez **Lister les albums Immich** : l’action affiche les noms, UUID et nombres d’éléments, afin de copier l’UUID choisi dans le formulaire. Évitez `localhost`, qui désigne le conteneur isolé de l’intégration et non votre serveur Immich.
 
 Après enregistrement, lancez **Tester la connexion Immich**, créez l’appareil **Immich slideshow** dans l’onglet **Découverte**, puis ajoutez cette caméra au dashboard. Consultez la documentation utilisateur complète : [français](./docs/fr.md) et [English](./docs/en.md).
 
