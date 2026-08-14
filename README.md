@@ -2,19 +2,21 @@
 
 > **Une intégration externe Gladys qui affiche un album Immich ou les souvenirs « ce jour-là » sous la forme d’une caméra virtuelle sur le dashboard.**
 
-Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama réellement utilisable avec Gladys **4.85+**. Le widget Photo natif de cette version repose encore sur une liste d’URL gérée manuellement ; il ne propose pas d’API publique de source de photos externe. L’adaptateur caméra est donc le moyen compatible de présenter immédiatement les photos Immich dans le dashboard, tandis que la couche `photoProvider` isole le futur raccordement à un tel contrat de widget [2] [3].
+Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama réellement utilisable avec Gladys **4.86+**. Le widget Photo natif de cette version repose encore sur une liste d’URL gérée manuellement ; il ne propose pas d’API publique de source de photos externe. L’adaptateur caméra est donc le moyen compatible de présenter immédiatement les photos Immich dans le dashboard, tandis que la couche `photoProvider` isole le futur raccordement à un tel contrat de widget [2] [3].
+
+L’intégration est classée dans la catégorie de catalogue **multimédia**, car elle affiche des photos Immich sous forme de diaporama sur le dashboard.
 
 ## Fonctionnalités
 
 | Fonction                | Comportement                                                                                                                                  |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sources Immich**      | Album par UUID ou souvenirs `on_this_day`, via les API `albums` et `memories`.                                                                |
+| **Sources Immich**      | Album par UUID ou souvenirs `on_this_day`, via les API `albums`, `search/metadata` et `memories`.                                             |
 | **Affichage dashboard** | Une caméra virtuelle `Immich slideshow`, mise à jour dès la connexion puis au rythme configuré.                                               |
 | **Images**              | Uniquement les éléments `IMAGE` ; les vidéos sont volontairement ignorées en v1.                                                              |
 | **Qualité maîtrisée**   | Récupération de l’aperçu Immich, correction d’orientation puis redimensionnement/compression JPEG sous la limite du canal caméra Gladys.      |
 | **Performance**         | Liste d’actifs limitée à 1–500 images, actualisée indépendamment du rythme d’affichage ; seul l’aperçu de la photo à afficher est téléchargé. |
 | **Confidentialité**     | Clé API saisie dans un champ Gladys `secret`, donc jamais exposée au navigateur du dashboard.                                                 |
-| **Contrôle**            | Boutons de test de connexion et d’actualisation immédiate, avec statuts de connexion et erreurs localisées.                                   |
+| **Contrôle**            | Test de connexion, liste des albums, actualisation immédiate, statuts de connexion et erreurs localisées.                                     |
 
 ## Architecture
 
