@@ -11,11 +11,40 @@ test('declares an installable Gladys device integration', () => {
   assert.equal(manifest.manifest_version, 1);
   assert.equal(manifest.type, 'device');
   assert.match(manifest.name, /^Immich Slideshow$/);
-  assert.match(manifest.gladys_version, /4\.85/);
+  assert.match(manifest.gladys_version, /4\.86/);
   assert.match(manifest.docker_image, /^ghcr\.io\/.+:.+$/);
   assert.match(manifest.cover_image, /^https:\/\//);
   assert.ok(manifest.description.en.length >= 10);
   assert.ok(manifest.description.fr.length >= 10);
+});
+
+test('declares valid catalog categories for Gladys 4.86', () => {
+  const validCategories = new Set([
+    'climate',
+    'lighting',
+    'energy',
+    'security',
+    'multimedia',
+    'appliances',
+    'environment',
+    'protocols',
+    'network',
+    'notifications',
+    'assistants',
+    'services',
+  ]);
+
+  assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
+  assert.deepEqual(manifest.categories, ['multimedia']);
+  assert.ok(manifest.categories.every((category) => validCategories.has(category)));
+
+  const minimumVersion = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
+  assert.ok(minimumVersion, 'gladys_version must declare a minimum version');
+  const [, major, minor] = minimumVersion.map(Number);
+  assert.ok(
+    major > 4 || (major === 4 && minor >= 86),
+    `categories requires gladys_version >= 4.86.0, got "${manifest.gladys_version}"`,
+  );
 });
 
 test('keeps manifest defaults aligned with runtime defaults', () => {
