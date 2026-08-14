@@ -1,18 +1,23 @@
 // -----------------------------------------------------------------------------
-// Camera image payloads have a strict size limit in Gladys. Immich previews can
-// occasionally exceed it, especially for detailed photographs, so re-encode
-// every slide locally before publishing it through the camera channel.
+// Camera image payloads have a strict size limit in Gladys. The SDK checks the
+// complete `image/jpeg;base64,...` string, not only the binary JPEG buffer.
 // -----------------------------------------------------------------------------
 
 import sharp from 'sharp';
 
-export const MAX_CAMERA_IMAGE_BYTES = 145 * 1024;
+export const CAMERA_IMAGE_PREFIX = 'image/jpeg;base64,';
+export const MAX_CAMERA_IMAGE_STRING_LENGTH = 150 * 1024;
+// Base64 expands binary data by roughly 4/3. Keep a small safety margin for
+// padding and the data-URL prefix so SDK validation can never reject a slide.
+export const MAX_CAMERA_IMAGE_BYTES = 108 * 1024;
 
 const ENCODING_STEPS = [
-  { width: 1_280, quality: 78 },
-  { width: 1_024, quality: 68 },
-  { width: 800, quality: 58 },
-  { width: 640, quality: 48 },
+  { width: 1_280, quality: 72 },
+  { width: 1_024, quality: 62 },
+  { width: 800, quality: 52 },
+  { width: 640, quality: 42 },
+  { width: 480, quality: 34 },
+  { width: 360, quality: 28 },
 ];
 
 export class ImageSizeError extends Error {
@@ -47,5 +52,9 @@ export async function toCameraImage(input) {
 }
 
 export function asGladysCameraImage({ contentType, buffer }) {
-  return `${contentType};base64,${buffer.toString('base64')}`;
+  const image = `${contentType};base64,${buffer.toString('base64')}`;
+  if (image.length > MAX_CAMERA_IMAGE_STRING_LENGTH) {
+    throw new ImageSizeError(image.length);
+  }
+  return image;
 }
