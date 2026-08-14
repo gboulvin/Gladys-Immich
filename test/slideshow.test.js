@@ -29,7 +29,7 @@ function createClient({ assets = [] } = {}) {
       return { albumName: 'Album', assetCount: assets.length };
     },
     async getAlbumAssets(albumIds, { size }) {
-      assert.deepEqual(albumIds, ['album-id']);
+      assert.equal(albumIds, 'album-id');
       assert.equal(size, config.max_assets);
       return assets;
     },
