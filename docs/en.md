@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This external Gladys integration turns an **Immich album** or the **Memories — on this day** collection into a virtual camera. Add that camera to the Gladys dashboard to display an automatically changing photo slideshow. Photos remain on the configured Immich server: the integration requests only Immich preview renditions and never downloads originals.
+This external Gladys integration turns one or more **Immich albums** or the **Memories — on this day** collection into a virtual camera. Add that camera to the Gladys dashboard to display an automatically changing photo slideshow. Photos remain on the configured Immich server: the integration requests only Immich preview renditions and never downloads originals.
 
-The integration is designed for Gladys **4.85.0 or newer**. It uses the established camera-image channel so the slideshow can be displayed on the current dashboard immediately. The photo selection module is also separated from the camera adapter, ready for the future native Photo-widget provider API announced by Gladys.
+The integration is designed for Gladys **4.86.0 or newer**. It uses the established camera-image channel so the slideshow can be displayed on the current dashboard immediately. The photo selection module is also separated from the camera adapter, ready for the future native Photo-widget provider API announced by Gladys.
 
 ## Prerequisites
 
@@ -21,15 +21,15 @@ The Gladys container must be able to reach the URL entered in the configuration 
 
 ## Setup
 
-Open **Integrations → Immich Slideshow → Configuration** and enter the server URL and API key. Select **Album** or **Memories — on this day**. For an album, click **List Immich albums** after entering the server URL and API key. The action returns each album name, UUID and asset count; copy the UUID of your chosen album into **Album UUID**. The button **Test Immich connection** confirms that Gladys can list albums with the configured key.
+Open **Integrations → Immich Slideshow → Configuration** and enter the server URL and API key. Select **Album** or **Memories — on this day**. For one or more albums, click **List Immich albums** after entering the server URL and API key. The action returns each album name, UUID and asset count; enter one or more UUIDs into **Album UUIDs**, separated by commas or line breaks. The integration merges the albums, deduplicates shared photos and applies the image cap to the combined source. The button **Test Immich connection** confirms that Gladys can list albums with the configured key.
 
-Choose the slide interval, how often the source list is refreshed, and the maximum number of images to keep. The source refresh is deliberately independent from the slide interval: a large album is listed only periodically while individual preview images are downloaded only when they are displayed. Videos are excluded. By default, the newest images appear first; enable random order to shuffle each refreshed list.
+Choose the slide interval, how often the source list is refreshed, and the maximum number of images to keep. Enable **Show Immich caption** to add the available Immich description, location and capture date in a readable band at the bottom of each image. The source refresh is deliberately independent from the slide interval: a large album is listed only periodically while individual preview images are downloaded only when they are displayed. Videos are excluded. By default, the newest images appear first; enable random order to shuffle each refreshed list.
 
 Save the configuration, open the integration’s **Discovery** tab, and create the **Immich slideshow** camera. Add this camera to a Gladys dashboard camera box. The first image is published immediately, then the camera updates at the configured slide interval. Use **Refresh slideshow now** after changing images or to immediately fetch today’s new memories.
 
 ## Privacy and image handling
 
-The API key is declared as a Gladys `secret`, so it is securely stored and is never returned to the dashboard browser. Requests sent to Immich include the `x-api-key` header inside the integration container. Preview images are corrected for orientation, resized and JPEG-compressed before they are sent through Gladys’s camera channel; this keeps the dashboard fluid and respects the channel’s payload limit.
+The API key is declared as a Gladys `secret`, so it is securely stored and is never returned to the dashboard browser. Requests sent to Immich include the `x-api-key` header inside the integration container. Preview images are corrected for orientation, resized and JPEG-compressed before they are sent through Gladys’s camera channel; this keeps the dashboard fluid and respects the channel’s payload limit. When enabled, the selected Immich metadata is burned into a high-contrast band at the bottom of the preview and therefore travels with the camera image to the dashboard.
 
 ## Troubleshooting
 
@@ -37,7 +37,7 @@ If the connection test reports an invalid key or permissions, recreate an Immich
 
 ## Current dashboard model and future photo widget
 
-Gladys 4.85’s native **Photo** widget accepts a manually managed URL list; it does not yet expose an external photo-source API. This project therefore delivers a working dashboard slideshow through a virtual camera device today. The independent `src/photoProvider.js` layer already resolves albums and memories to normalized photo metadata and captions, so it is ready to be connected to the future native Photo-widget provider contract without rewriting the Immich client.
+Gladys 4.86’s native **Photo** widget accepts a manually managed URL list; it does not yet expose an external photo-source API. This project therefore delivers a working dashboard slideshow through a virtual camera device today. The independent `src/photoProvider.js` layer already resolves albums and memories to normalized photo metadata and captions, so it is ready to be connected to the future native Photo-widget provider contract without rewriting the Immich client.
 
 ## References
 
