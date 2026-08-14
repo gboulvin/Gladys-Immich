@@ -47,6 +47,10 @@ test('declares valid catalog categories for Gladys 4.86', () => {
   );
 });
 
+test('declares the supported local and cloud transports', () => {
+  assert.deepEqual(manifest.transports, ['local', 'cloud']);
+});
+
 test('keeps manifest defaults aligned with runtime defaults', () => {
   for (const field of manifest.config_schema) {
     if (field.default !== undefined) {
