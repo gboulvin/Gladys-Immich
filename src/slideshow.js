@@ -23,9 +23,10 @@ function sourceKey(config) {
     immich_url: config.immich_url,
     api_key: config.api_key,
     source_mode: config.source_mode,
-    album_id: config.album_id,
+    album_ids: config.album_ids,
     max_assets: config.max_assets,
     random_order: config.random_order,
+    show_caption: config.show_caption,
   });
 }
 
@@ -127,7 +128,9 @@ export class ImmichSlideshow {
     const photo = this.photos[this.nextIndex];
     this.nextIndex = (this.nextIndex + 1) % this.photos.length;
     const preview = await this.provider.getPreview(photo.id);
-    const cameraImage = await this.imageTransformer(preview.buffer);
+    const cameraImage = await this.imageTransformer(preview.buffer, {
+      caption: config.show_caption ? photo.caption : '',
+    });
 
     return {
       ...photo,
