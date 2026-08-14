@@ -96,11 +96,8 @@ export function normalizeConfig(raw = {}) {
   };
 }
 
-/**
- * Return an actionable, localized configuration problem or null when ready.
- * @param {ReturnType<typeof normalizeConfig>} config
- */
-export function validateConfig(config) {
+/** Return a localized error when the server URL or API key is unavailable. */
+export function validateConnectionConfig(config) {
   if (!config.immich_url) {
     return {
       en: 'Enter a valid Immich server URL (http:// or https://).',
@@ -112,6 +109,18 @@ export function validateConfig(config) {
       en: 'Enter an Immich API key with album, asset, and memory read access.',
       fr: 'Saisissez une clé API Immich avec les droits de lecture des albums, médias et souvenirs.',
     };
+  }
+  return null;
+}
+
+/**
+ * Return an actionable, localized configuration problem or null when ready.
+ * @param {ReturnType<typeof normalizeConfig>} config
+ */
+export function validateConfig(config) {
+  const connectionProblem = validateConnectionConfig(config);
+  if (connectionProblem) {
+    return connectionProblem;
   }
   if (config.source_mode === SOURCE_MODES.ALBUM && !config.album_id) {
     return {
