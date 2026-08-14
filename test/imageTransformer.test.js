@@ -35,3 +35,20 @@ test('rejects a Base64 camera payload larger than the SDK limit', () => {
     ImageSizeError,
   );
 });
+
+test('renders an optional Immich caption in the camera image budget', async () => {
+  const input = await sharp({
+    create: { width: 1000, height: 650, channels: 3, background: { r: 60, g: 100, b: 140 } },
+  })
+    .png()
+    .toBuffer();
+
+  const withoutCaption = await toCameraImage(input);
+  const withCaption = await toCameraImage(input, {
+    caption: 'Family holidays — Rome — 12 August 2024',
+  });
+
+  assert.ok(withCaption.buffer.length <= MAX_CAMERA_IMAGE_BYTES);
+  assert.notDeepEqual(withCaption.buffer, withoutCaption.buffer);
+  assert.ok(asGladysCameraImage(withCaption).length <= MAX_CAMERA_IMAGE_STRING_LENGTH);
+});
