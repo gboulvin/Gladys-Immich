@@ -120,7 +120,14 @@ export class ImmichPhotoProvider {
       sourceName = albumNames.length === 1 ? albumNames[0] : `Albums — ${albumNames.join(', ')}`;
 
       try {
-        assets = await this.client.getAlbumAssets(albumIds, { size: config.max_assets });
+        // Immich may interpret several `albumIds` as an intersection. Fetch each
+        // album separately, then merge locally to guarantee a true union.
+        const assetsByAlbum = await Promise.all(
+          albumIds.map((albumId) =>
+            this.client.getAlbumAssets(albumId, { size: config.max_assets }),
+          ),
+        );
+        assets = assetsByAlbum.flat();
       } catch (error) {
         // Older Immich servers returned the assets inline on each album object.
         // Keep that compatibility path, but do not hide modern API failures.
