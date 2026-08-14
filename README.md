@@ -1,6 +1,6 @@
 # Diaporama Immich pour Gladys
 
-> **Une intégration externe Gladys qui affiche un album Immich ou les souvenirs « ce jour-là » sous la forme d’une caméra virtuelle sur le dashboard.**
+> **Une intégration externe Gladys qui affiche un ou plusieurs albums Immich, ou les souvenirs « ce jour-là », sous la forme d’une caméra virtuelle sur le dashboard.**
 
 Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama réellement utilisable avec Gladys **4.86+**. Le widget Photo natif de cette version repose encore sur une liste d’URL gérée manuellement ; il ne propose pas d’API publique de source de photos externe. L’adaptateur caméra est donc le moyen compatible de présenter immédiatement les photos Immich dans le dashboard, tandis que la couche `photoProvider` isole le futur raccordement à un tel contrat de widget [2] [3].
 
@@ -10,10 +10,10 @@ L’intégration est classée dans la catégorie de catalogue **multimédia**, c
 
 | Fonction                | Comportement                                                                                                                                  |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sources Immich**      | Album par UUID ou souvenirs `on_this_day`, via les API `albums`, `search/metadata` et `memories`.                                             |
+| **Sources Immich**      | Un ou plusieurs albums par UUID, ou souvenirs `on_this_day`, via les API `albums`, `search/metadata` et `memories`.                           |
 | **Affichage dashboard** | Une caméra virtuelle `Immich slideshow`, mise à jour dès la connexion puis au rythme configuré.                                               |
 | **Images**              | Uniquement les éléments `IMAGE` ; les vidéos sont volontairement ignorées en v1.                                                              |
-| **Qualité maîtrisée**   | Récupération de l’aperçu Immich, correction d’orientation puis redimensionnement/compression JPEG sous la limite du canal caméra Gladys.      |
+| **Qualité maîtrisée**   | Aperçu Immich orienté, légende facultative en bas d’image puis redimensionnement/compression JPEG sous la limite caméra Gladys.               |
 | **Performance**         | Liste d’actifs limitée à 1–500 images, actualisée indépendamment du rythme d’affichage ; seul l’aperçu de la photo à afficher est téléchargé. |
 | **Confidentialité**     | Clé API saisie dans un champ Gladys `secret`, donc jamais exposée au navigateur du dashboard.                                                 |
 | **Contrôle**            | Test de connexion, liste des albums, actualisation immédiate, statuts de connexion et erreurs localisées.                                     |
@@ -42,7 +42,7 @@ La séparation entre le client HTTP, la résolution de la source et le moteur de
 
 ## Configuration utilisateur
 
-Créez dans Immich une clé API disposant des permissions `album.read`, `asset.read`, `asset.view` et `memory.read`. Dans Gladys, ouvrez l’intégration puis entrez l’URL de votre serveur, par exemple `http://192.168.1.20:2283`, et la clé API. Pour un album, utilisez **Lister les albums Immich** : l’action affiche les noms, UUID et nombres d’éléments, afin de copier l’UUID choisi dans le formulaire. Évitez `localhost`, qui désigne le conteneur isolé de l’intégration et non votre serveur Immich.
+Créez dans Immich une clé API disposant des permissions `album.read`, `asset.read`, `asset.view` et `memory.read`. Dans Gladys, ouvrez l’intégration puis entrez l’URL de votre serveur, par exemple `http://192.168.1.20:2283`, et la clé API. Pour un ou plusieurs albums, utilisez **Lister les albums Immich** : l’action affiche les noms, UUID et nombres d’éléments ; saisissez les UUID retenus dans le formulaire, séparés par des virgules ou des retours à la ligne. Activez **Afficher la légende Immich** pour intégrer la description, le lieu et la date de prise de vue disponibles dans un bandeau au bas du visuel. Évitez `localhost`, qui désigne le conteneur isolé de l’intégration et non votre serveur Immich.
 
 Après enregistrement, lancez **Tester la connexion Immich**, créez l’appareil **Immich slideshow** dans l’onglet **Découverte**, puis ajoutez cette caméra au dashboard. Consultez la documentation utilisateur complète : [français](./docs/fr.md) et [English](./docs/en.md).
 
