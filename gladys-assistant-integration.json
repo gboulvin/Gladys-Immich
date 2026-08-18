@@ -9,7 +9,7 @@
   "version": "0.1.7",
   "docker_image": "ghcr.io/gboulvin/gladys-immich:0.1.7",
   "gladys_version": ">=4.86.0",
-  "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg?v=0.1.7-cover",
+  "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg?v=0.1.7-cover-optimized",
   "categories": ["multimedia"],
   "transports": ["local", "cloud"],
   "config_schema": [
