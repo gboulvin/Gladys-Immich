@@ -1,10 +1,5 @@
 // -----------------------------------------------------------------------------
-// Virtual Gladys camera backed by an Immich slideshow.
-//
-// Gladys 4.85 exposes an image channel for dashboard camera devices. Publishing
-// a new preview to that channel on a controlled interval gives users a working
-// slideshow today, while `src/photoProvider.js` remains reusable by the future
-// native Photo-widget provider API announced by Gladys.
+// Virtual Gladys cameras backed by independent Immich slideshows.
 // -----------------------------------------------------------------------------
 
 import {
@@ -12,15 +7,17 @@ import {
   DEVICE_FEATURE_CATEGORIES,
   DEVICE_FEATURE_TYPES,
 } from '@gladysassistant/integration-sdk';
-import { validateConfig, validateConnectionConfig } from '../config.js';
+import {
+  getSlideshowConfig,
+  hasSlideshowConfiguration,
+  validateConfig,
+  validateConnectionConfig,
+} from '../config.js';
 import { EmptyPhotoSourceError, ImmichSlideshow } from '../slideshow.js';
 
 const DEVICE_TYPE = 'camera';
-const PLATFORM_DEVICE_ID = 'immich-slideshow';
 const FEATURE = { IMAGE: 'image' };
 const logger = createLogger({ name: 'immich-slideshow' });
-
-const slideshow = new ImmichSlideshow();
 
 function errorMessage(error) {
   if (error instanceof EmptyPhotoSourceError) {
@@ -55,136 +52,187 @@ function throwConfigProblem(problem) {
   }
 }
 
-function assertConfigured(config) {
-  throwConfigProblem(validateConfig(config));
-}
+/**
+ * Build one independent virtual camera.
+ *
+ * The first camera keeps the historical stable external identifier. The second
+ * camera has its own identifier, configuration profile and ImmichSlideshow
+ * instance, so its cache, rotation index and timers never overlap with the
+ * first dashboard slideshow.
+ */
+export function createSlideshowCamera({
+  key,
+  platformDeviceId,
+  profileNumber,
+  name,
+  slideshow = new ImmichSlideshow(),
+}) {
+  const label = profileNumber === 1 ? 'Immich slideshow' : `Immich slideshow ${profileNumber}`;
 
-function assertConnectionConfigured(config) {
-  throwConfigProblem(validateConnectionConfig(config));
-}
+  function profileFrom(config) {
+    return getSlideshowConfig(config, profileNumber);
+  }
 
-async function publishNextSlide(gladys, config) {
-  assertConfigured(config);
-  const slide = await slideshow.next(config);
-  const ids = gladys.externalIds(DEVICE_TYPE, PLATFORM_DEVICE_ID);
-  await gladys.publishCameraImage(ids.device, slide.image);
-  logger.info(`Published “${slide.originalFileName || slide.id}” from ${slide.sourceName}`);
-  return slide;
-}
+  function assertConfigured(config) {
+    throwConfigProblem(validateConfig(profileFrom(config)));
+  }
 
-export const slideshowCamera = {
-  key: 'immich-slideshow-camera',
+  function assertConnectionConfigured(config) {
+    throwConfigProblem(validateConnectionConfig(profileFrom(config)));
+  }
 
-  deviceExternalId(gladys) {
-    return gladys.externalIds(DEVICE_TYPE, PLATFORM_DEVICE_ID).device;
-  },
-
-  buildDevice(gladys) {
-    const ids = gladys.externalIds(DEVICE_TYPE, PLATFORM_DEVICE_ID);
-    return {
-      name: 'Immich slideshow',
-      external_id: ids.device,
-      features: [
-        {
-          name: 'Image',
-          external_id: ids.feature(FEATURE.IMAGE),
-          category: DEVICE_FEATURE_CATEGORIES.CAMERA,
-          type: DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
-          read_only: true,
-          has_feedback: false,
-          keep_history: false,
-          // Gladys requires numeric bounds for every DeviceFeature, including
-          // camera images carried by the dedicated image channel.
-          min: 0,
-          max: 1,
-        },
-      ],
-    };
-  },
-
-  async onGetImage(_gladys, { config }) {
+  async function publishNextSlide(gladys, config) {
+    const profile = profileFrom(config);
     assertConfigured(config);
-    const slide = await slideshow.next(config);
-    logger.info(`On-demand slide “${slide.originalFileName || slide.id}” from ${slide.sourceName}`);
-    return slide.image;
-  },
-
-  /** Start the dashboard feed and return its mandatory cleanup callback. */
-  startPush(gladys, config) {
-    if (validateConfig(config)) {
-      logger.info('Slideshow waiting for a complete Immich configuration.');
-      return () => {};
-    }
-
-    let stopped = false;
-    const publish = async () => {
-      if (stopped) {
-        return;
-      }
-      try {
-        await publishNextSlide(gladys, config);
-      } catch (error) {
-        logger.error('Failed to publish the next Immich slide', error);
-        await gladys
-          .setConnectionStatus(false, error.localizedMessage ?? errorMessage(error))
-          .catch(() => {});
-      }
-    };
-
-    // Publish immediately; users do not wait for the first interval to elapse.
-    void publish();
-    const interval = setInterval(() => void publish(), config.slide_interval * 1_000);
-
-    return () => {
-      stopped = true;
-      clearInterval(interval);
-    };
-  },
-
-  reset() {
-    slideshow.reset();
-  },
-
-  async testConnection(_gladys, { config }) {
-    assertConfigured(config);
-    const { albumCount } = await slideshow.testConnection(config);
-    return {
-      en: `Immich connection successful. ${albumCount} album${albumCount === 1 ? '' : 's'} found.`,
-      fr: `Connexion Immich réussie. ${albumCount} album${albumCount === 1 ? '' : 's'} trouvé${albumCount === 1 ? '' : 's'}.`,
-    };
-  },
-
-  async listAlbums(_gladys, { config }) {
-    assertConnectionConfigured(config);
-    const albums = await slideshow.listAlbums(config);
-    const displayedAlbums = albums.slice(0, 50);
-    const lines = displayedAlbums.map(
-      (album) => `• ${album.name} — ${album.id}${album.assetCount ? ` (${album.assetCount})` : ''}`,
+    const slide = await slideshow.next(profile);
+    const ids = gladys.externalIds(DEVICE_TYPE, platformDeviceId);
+    await gladys.publishCameraImage(ids.device, slide.image);
+    logger.info(
+      `Published “${slide.originalFileName || slide.id}” from ${slide.sourceName} on ${label}`,
     );
-    const suffix =
-      albums.length > displayedAlbums.length
-        ? `\n… +${albums.length - displayedAlbums.length}`
-        : '';
+    return slide;
+  }
 
-    return {
-      en: `Found ${albums.length} album${albums.length === 1 ? '' : 's'}. Copy the UUID of the chosen album:\n${lines.join('\n')}${suffix}`,
-      fr: `${albums.length} album${albums.length === 1 ? '' : 's'} trouvé${albums.length === 1 ? '' : 's'}. Copiez l’UUID de l’album choisi :\n${lines.join('\n')}${suffix}`,
-    };
-  },
+  return {
+    key,
+    profileNumber,
 
-  async refreshNow(gladys, { config }) {
-    assertConfigured(config);
-    await slideshow.refresh(config, { force: true });
-    const slide = await publishNextSlide(gladys, config);
-    return {
-      en: `Immich source refreshed. Displaying ${slide.originalFileName || 'the next image'}.`,
-      fr: `Source Immich actualisée. Affichage de ${slide.originalFileName || 'la prochaine image'}.`,
-    };
-  },
+    deviceExternalId(gladys) {
+      return gladys.externalIds(DEVICE_TYPE, platformDeviceId).device;
+    },
 
-  getStatus() {
-    return slideshow.getStatus();
-  },
+    buildDevice(gladys) {
+      const ids = gladys.externalIds(DEVICE_TYPE, platformDeviceId);
+      return {
+        name,
+        external_id: ids.device,
+        features: [
+          {
+            name: 'Image',
+            external_id: ids.feature(FEATURE.IMAGE),
+            category: DEVICE_FEATURE_CATEGORIES.CAMERA,
+            type: DEVICE_FEATURE_TYPES.CAMERA.IMAGE,
+            read_only: true,
+            has_feedback: false,
+            keep_history: false,
+            // Gladys requires numeric bounds for every DeviceFeature, including
+            // camera images carried by the dedicated image channel.
+            min: 0,
+            max: 1,
+          },
+        ],
+      };
+    },
 
-  errorMessage,
-};
+    async onGetImage(_gladys, { config }) {
+      const profile = profileFrom(config);
+      assertConfigured(config);
+      const slide = await slideshow.next(profile);
+      logger.info(
+        `On-demand slide “${slide.originalFileName || slide.id}” from ${slide.sourceName} on ${label}`,
+      );
+      return slide.image;
+    },
+
+    /** Start the dashboard feed and return its mandatory cleanup callback. */
+    startPush(gladys, config) {
+      const profile = profileFrom(config);
+      if (validateConfig(profile)) {
+        if (hasSlideshowConfiguration(profile)) {
+          logger.info(`${label} is waiting for a complete Immich configuration.`);
+        }
+        return () => {};
+      }
+
+      let stopped = false;
+      const publish = async () => {
+        if (stopped) {
+          return;
+        }
+        try {
+          await publishNextSlide(gladys, config);
+        } catch (error) {
+          logger.error(`Failed to publish the next Immich slide on ${label}`, error);
+          await gladys
+            .setConnectionStatus(false, error.localizedMessage ?? errorMessage(error))
+            .catch(() => {});
+        }
+      };
+
+      // Publish immediately; users do not wait for the first interval to elapse.
+      void publish();
+      const interval = setInterval(() => void publish(), profile.slide_interval * 1_000);
+
+      return () => {
+        stopped = true;
+        clearInterval(interval);
+      };
+    },
+
+    reset() {
+      slideshow.reset();
+    },
+
+    async testConnection(_gladys, { config }) {
+      const profile = profileFrom(config);
+      assertConfigured(config);
+      const { albumCount } = await slideshow.testConnection(profile);
+      return {
+        en: `Immich connection successful. ${albumCount} album${albumCount === 1 ? '' : 's'} found.`,
+        fr: `Connexion Immich réussie. ${albumCount} album${albumCount === 1 ? '' : 's'} trouvé${albumCount === 1 ? '' : 's'}.`,
+      };
+    },
+
+    async listAlbums(_gladys, { config }) {
+      const profile = profileFrom(config);
+      assertConnectionConfigured(config);
+      const albums = await slideshow.listAlbums(profile);
+      const displayedAlbums = albums.slice(0, 50);
+      const lines = displayedAlbums.map(
+        (album) =>
+          `• ${album.name} — ${album.id}${album.assetCount ? ` (${album.assetCount})` : ''}`,
+      );
+      const suffix =
+        albums.length > displayedAlbums.length
+          ? `\n… +${albums.length - displayedAlbums.length}`
+          : '';
+
+      return {
+        en: `Found ${albums.length} album${albums.length === 1 ? '' : 's'}. Copy the UUID of the chosen album:\n${lines.join('\n')}${suffix}`,
+        fr: `${albums.length} album${albums.length === 1 ? '' : 's'} trouvé${albums.length === 1 ? '' : 's'}. Copiez l’UUID de l’album choisi :\n${lines.join('\n')}${suffix}`,
+      };
+    },
+
+    async refreshNow(gladys, { config }) {
+      const profile = profileFrom(config);
+      assertConfigured(config);
+      await slideshow.refresh(profile, { force: true });
+      const slide = await publishNextSlide(gladys, config);
+      return {
+        en: `Immich source refreshed. Displaying ${slide.originalFileName || 'the next image'}.`,
+        fr: `Source Immich actualisée. Affichage de ${slide.originalFileName || 'la prochaine image'}.`,
+      };
+    },
+
+    getStatus() {
+      return slideshow.getStatus();
+    },
+
+    errorMessage,
+  };
+}
+
+// Keep the original external id for backward compatibility with existing users.
+export const slideshowCamera = createSlideshowCamera({
+  key: 'immich-slideshow-camera',
+  platformDeviceId: 'immich-slideshow',
+  profileNumber: 1,
+  name: 'Immich slideshow',
+});
+
+export const secondSlideshowCamera = createSlideshowCamera({
+  key: 'immich-slideshow-camera-2',
+  platformDeviceId: 'immich-slideshow-2',
+  profileNumber: 2,
+  name: 'Immich slideshow 2',
+});

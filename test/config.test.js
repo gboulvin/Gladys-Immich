@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   DEFAULT_CONFIG,
+  getSlideshowConfig,
   normalizeConfig,
   SOURCE_MODES,
   validateConfig,
@@ -40,6 +41,45 @@ test('falls back to safe defaults for malformed settings', () => {
   assert.equal(config.immich_url, '');
   assert.equal(config.source_mode, SOURCE_MODES.ALBUM);
   assert.equal(config.slide_interval, DEFAULT_CONFIG.slide_interval);
+});
+
+test('keeps the second slideshow profile independent from the first', () => {
+  const config = normalizeConfig({
+    immich_url: 'https://first-immich.example.test',
+    api_key: 'first-key',
+    album_id: 'first-album',
+    immich_url_2: ' https://second-immich.example.test/// ',
+    api_key_2: ' second-key ',
+    source_mode_2: SOURCE_MODES.MEMORIES,
+    slide_interval_2: '120',
+    random_order_2: 'true',
+    show_caption_2: true,
+  });
+
+  assert.deepEqual(getSlideshowConfig(config, 1), {
+    immich_url: 'https://first-immich.example.test',
+    api_key: 'first-key',
+    source_mode: SOURCE_MODES.ALBUM,
+    album_id: 'first-album',
+    album_ids: ['first-album'],
+    slide_interval: 60,
+    source_refresh_interval: 3_600,
+    max_assets: 200,
+    random_order: false,
+    show_caption: false,
+  });
+  assert.deepEqual(getSlideshowConfig(config, 2), {
+    immich_url: 'https://second-immich.example.test',
+    api_key: 'second-key',
+    source_mode: SOURCE_MODES.MEMORIES,
+    album_id: '',
+    album_ids: [],
+    slide_interval: 120,
+    source_refresh_interval: 3_600,
+    max_assets: 200,
+    random_order: true,
+    show_caption: true,
+  });
 });
 
 test('explains the first missing required setting', () => {

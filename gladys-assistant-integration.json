@@ -16,7 +16,7 @@
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Connect Immich", "fr": "Connecter Immich" },
+      "label": { "en": "Slideshow 1 — connect Immich", "fr": "Diaporama 1 — connecter Immich" },
       "description": {
         "en": "Create an Immich API key with album.read, asset.read, asset.view, and memory.read permissions. The key is securely stored by Gladys and is never sent to the dashboard browser.",
         "fr": "Créez une clé API Immich avec les permissions album.read, asset.read, asset.view et memory.read. Gladys stocke cette clé de manière sécurisée ; elle n’est jamais envoyée au navigateur du dashboard."
@@ -142,6 +142,126 @@
       },
       "required": false,
       "default": false
+    },
+    {
+      "key": "second_slideshow_intro",
+      "type": "section",
+      "label": { "en": "Slideshow 2 — connect Immich", "fr": "Diaporama 2 — connecter Immich" },
+      "description": {
+        "en": "Optional. Configure this independent slideshow to display a different album, memories source, or Immich server on a second Gladys dashboard camera.",
+        "fr": "Optionnel. Configurez ce diaporama indépendant pour afficher un autre album, une autre source de souvenirs ou un autre serveur Immich sur une seconde caméra Gladys."
+      }
+    },
+    {
+      "key": "immich_url_2",
+      "type": "string",
+      "label": { "en": "Immich server URL", "fr": "URL du serveur Immich" },
+      "description": {
+        "en": "The server used by the second slideshow. It may be the same as slideshow 1 or a different Immich instance.",
+        "fr": "Serveur utilisé par le second diaporama. Il peut être identique à celui du diaporama 1 ou pointer vers une autre instance Immich."
+      },
+      "placeholder": { "en": "https://immich.example.net", "fr": "https://immich.exemple.net" },
+      "required": false
+    },
+    {
+      "key": "api_key_2",
+      "type": "secret",
+      "label": { "en": "Immich API key", "fr": "Clé API Immich" },
+      "placeholder": { "en": "Paste the API key", "fr": "Collez la clé API" },
+      "required": false
+    },
+    {
+      "key": "source_mode_2",
+      "type": "select",
+      "label": { "en": "Photo source", "fr": "Source des photos" },
+      "description": {
+        "en": "Choose a specific album or Immich memories from this day in previous years for the second dashboard camera.",
+        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes pour la seconde caméra du dashboard."
+      },
+      "required": false,
+      "default": "album",
+      "options": [
+        { "value": "album", "label": { "en": "Album", "fr": "Album" } },
+        {
+          "value": "memories",
+          "label": { "en": "Memories — on this day", "fr": "Souvenirs — ce jour-là" }
+        }
+      ]
+    },
+    {
+      "key": "album_id_2",
+      "type": "string",
+      "label": { "en": "Album UUIDs", "fr": "UUID des albums" },
+      "description": {
+        "en": "Required only when the second source is Album. Enter one or more UUIDs separated by commas or line breaks. Leave it empty for Memories.",
+        "fr": "Requis uniquement lorsque la seconde source est Album. Saisissez un ou plusieurs UUID séparés par des virgules ou des retours à la ligne. Laissez vide pour Souvenirs."
+      },
+      "placeholder": { "en": "e.g. 1033b9e2-…, a490c2f0-…", "fr": "ex. 1033b9e2-…, a490c2f0-…" },
+      "required": false
+    },
+    {
+      "key": "slide_interval_2",
+      "type": "number",
+      "label": { "en": "Slide interval (seconds)", "fr": "Intervalle entre les photos (secondes)" },
+      "description": {
+        "en": "How long each image from the second slideshow stays on its dashboard camera.",
+        "fr": "Durée d’affichage de chaque image du second diaporama sur sa caméra du dashboard."
+      },
+      "required": false,
+      "default": 60,
+      "min": 10,
+      "max": 3600
+    },
+    {
+      "key": "source_refresh_interval_2",
+      "type": "number",
+      "label": {
+        "en": "Source refresh interval (seconds)",
+        "fr": "Intervalle d’actualisation de la source (secondes)"
+      },
+      "description": {
+        "en": "How often the second slideshow asks Immich for its album or today’s memories.",
+        "fr": "Fréquence à laquelle le second diaporama redemande son album ou les souvenirs du jour à Immich."
+      },
+      "required": false,
+      "default": 3600,
+      "min": 300,
+      "max": 86400
+    },
+    {
+      "key": "max_assets_2",
+      "type": "number",
+      "label": { "en": "Maximum images", "fr": "Nombre maximal d’images" },
+      "description": {
+        "en": "Caps the second slideshow source to keep the integration responsive.",
+        "fr": "Limite la source du second diaporama pour préserver la réactivité."
+      },
+      "required": false,
+      "default": 200,
+      "min": 1,
+      "max": 500
+    },
+    {
+      "key": "random_order_2",
+      "type": "boolean",
+      "label": { "en": "Randomize images", "fr": "Mélanger les images" },
+      "description": {
+        "en": "Randomizes only the images shown by the second slideshow.",
+        "fr": "Mélange uniquement les images affichées par le second diaporama."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "show_caption_2",
+      "type": "boolean",
+      "label": { "en": "Show Immich caption", "fr": "Afficher la légende Immich" },
+      "description": {
+        "en": "Adds the Immich description, location and capture date to images from the second slideshow when available.",
+        "fr": "Ajoute la description, le lieu et la date de prise de vue Immich aux images du second diaporama lorsqu’ils sont disponibles."
+      },
+      "required": false,
+      "default": false
     }
   ],
   "actions": [
@@ -157,7 +277,28 @@
     },
     {
       "key": "refresh_now",
-      "label": { "en": "Refresh slideshow now", "fr": "Actualiser le diaporama maintenant" },
+      "label": { "en": "Refresh slideshow 1 now", "fr": "Actualiser le diaporama 1 maintenant" },
+      "timeout_seconds": 30
+    },
+    {
+      "key": "test_connection_2",
+      "label": {
+        "en": "Test slideshow 2 Immich connection",
+        "fr": "Tester la connexion Immich du diaporama 2"
+      },
+      "timeout_seconds": 30
+    },
+    {
+      "key": "list_albums_2",
+      "label": {
+        "en": "List slideshow 2 Immich albums",
+        "fr": "Lister les albums Immich du diaporama 2"
+      },
+      "timeout_seconds": 30
+    },
+    {
+      "key": "refresh_now_2",
+      "label": { "en": "Refresh slideshow 2 now", "fr": "Actualiser le diaporama 2 maintenant" },
       "timeout_seconds": 30
     }
   ]

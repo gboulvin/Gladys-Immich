@@ -63,22 +63,35 @@ test('keeps manifest defaults aligned with runtime defaults', () => {
   }
 });
 
-test('protects the Immich API key and defines the runtime actions', () => {
+test('protects the Immich API keys and defines actions for both slideshows', () => {
   const apiKey = manifest.config_schema.find((field) => field.key === 'api_key');
+  const secondApiKey = manifest.config_schema.find((field) => field.key === 'api_key_2');
   assert.equal(apiKey.type, 'secret');
   assert.equal(apiKey.required, true);
+  assert.equal(secondApiKey.type, 'secret');
+  assert.equal(secondApiKey.required, false);
   assert.match(manifest.config_schema[0].description.en, /asset\.read/);
 
   assert.deepEqual(
     manifest.actions.map((action) => action.key),
-    ['test_connection', 'list_albums', 'refresh_now'],
+    [
+      'test_connection',
+      'list_albums',
+      'refresh_now',
+      'test_connection_2',
+      'list_albums_2',
+      'refresh_now_2',
+    ],
   );
 });
 
 test('uses purely presentational documentation sections', () => {
-  const section = manifest.config_schema.find((field) => field.type === 'section');
-  assert.ok(section);
-  assert.equal(section.default, undefined);
-  assert.equal(section.required, undefined);
-  assert.ok(section.links.every((link) => link.url.startsWith('https://')));
+  const sections = manifest.config_schema.filter((field) => field.type === 'section');
+  assert.equal(sections.length, 2);
+  for (const section of sections) {
+    assert.equal(section.default, undefined);
+    assert.equal(section.required, undefined);
+  }
+  assert.ok(sections[0].links.every((link) => link.url.startsWith('https://')));
+  assert.match(sections[1].label.fr, /Diaporama 2/);
 });

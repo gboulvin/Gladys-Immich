@@ -1,13 +1,14 @@
 // -----------------------------------------------------------------------------
 // Gladys external integration entry point for the Immich slideshow.
-//
-// The SDK owns authentication, WebSocket reconnection and acknowledgements. The
-// integration itself owns only its configuration, Immich calls and one virtual
-// camera device whose image changes on the configured slideshow interval.
 // -----------------------------------------------------------------------------
 
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
-import { normalizeConfig, validateConfig } from './src/config.js';
+import {
+  getSlideshowConfig,
+  hasSlideshowConfiguration,
+  normalizeConfig,
+  validateConfig,
+} from './src/config.js';
 import {
   DEVICE_BLUEPRINTS,
   buildDiscoveredDevices,
@@ -40,25 +41,43 @@ async function publishDiscovery() {
   await gladys.publishDiscoveredDevices(buildDiscoveredDevices(gladys, config));
 }
 
+function configuredBlueprints() {
+  return DEVICE_BLUEPRINTS.filter((blueprint) =>
+    hasSlideshowConfiguration(getSlideshowConfig(config, blueprint.profileNumber)),
+  );
+}
+
 async function setImmichConnectionStatus() {
-  const problem = validateConfig(config);
-  if (problem) {
-    await gladys.setConnectionStatus(false, problem);
+  const configured = configuredBlueprints();
+  if (configured.length === 0) {
+    await gladys.setConnectionStatus(false, {
+      en: 'Configure at least one Immich slideshow.',
+      fr: 'Configurez au moins un diaporama Immich.',
+    });
     return;
   }
 
+  for (const blueprint of configured) {
+    const profile = getSlideshowConfig(config, blueprint.profileNumber);
+    const problem = validateConfig(profile);
+    if (problem) {
+      await gladys.setConnectionStatus(false, problem);
+      return;
+    }
+  }
+
   try {
-    await DEVICE_BLUEPRINTS[0].testConnection(gladys, { config });
+    await Promise.all(configured.map((blueprint) => blueprint.testConnection(gladys, { config })));
     await gladys.setConnectionStatus(true);
   } catch (error) {
     logger.error('Immich connection check failed', error);
-    await gladys.setConnectionStatus(false, DEVICE_BLUEPRINTS[0].errorMessage(error));
+    await gladys.setConnectionStatus(false, configured[0].errorMessage(error));
   }
 }
 
-// Gladys asks for the virtual camera in the Discovery tab.
+// Gladys asks for the virtual cameras in the Discovery tab.
 gladys.onScanRequest(async () => {
-  logger.info('Publishing the Immich slideshow camera for discovery');
+  logger.info('Publishing Immich slideshow cameras for discovery');
   await publishDiscovery();
 });
 
@@ -71,17 +90,21 @@ gladys.onGetImage(async (device) => {
   return blueprint.onGetImage(gladys, { device, config });
 });
 
-// Actions rendered in the Gladys Configuration tab.
+// Actions rendered in the Gladys Configuration tab. Keep the historical keys
+// for the first slideshow, and expose an equivalent set for the second one.
 gladys.onAction('test_connection', () => DEVICE_BLUEPRINTS[0].testConnection(gladys, { config }));
 gladys.onAction('list_albums', () => DEVICE_BLUEPRINTS[0].listAlbums(gladys, { config }));
 gladys.onAction('refresh_now', () => DEVICE_BLUEPRINTS[0].refreshNow(gladys, { config }));
+gladys.onAction('test_connection_2', () => DEVICE_BLUEPRINTS[1].testConnection(gladys, { config }));
+gladys.onAction('list_albums_2', () => DEVICE_BLUEPRINTS[1].listAlbums(gladys, { config }));
+gladys.onAction('refresh_now_2', () => DEVICE_BLUEPRINTS[1].refreshNow(gladys, { config }));
 
-// A change of source, key, or timing restarts the loop using the new settings.
+// A change of either source, key, or timing restarts both independent loops.
 gladys.onConfigUpdated(async (newConfig) => {
   logger.info('Immich configuration updated');
   config = normalizeConfig(newConfig);
   stopPushSubscriptions();
-  DEVICE_BLUEPRINTS[0].reset();
+  DEVICE_BLUEPRINTS.forEach((blueprint) => blueprint.reset());
   await publishDiscovery();
   await startPushSubscriptions();
   await setImmichConnectionStatus();
@@ -109,7 +132,7 @@ gladys.on('disconnected', () => {
 });
 
 gladys.handleShutdown((signal) => {
-  logger.info(`Received ${signal}; stopping the Immich slideshow`);
+  logger.info(`Received ${signal}; stopping Immich slideshows`);
   stopPushSubscriptions();
 });
 
