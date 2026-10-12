@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-12
+
 ### Added
 
 - **Immich photo** dashboard widget: the photo on display on a slideshow
@@ -60,4 +62,5 @@ the notes of the version's GitHub Release.
 - The integration can write to `/data`: the image creates the directory owned by
   the `node` user, a new Docker volume was owned by root.
 
-[Unreleased]: https://github.com/gboulvin/Gladys-Immich/commits/main
+[Unreleased]: https://github.com/gboulvin/Gladys-Immich/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/gboulvin/Gladys-Immich/releases/tag/v0.2.0
