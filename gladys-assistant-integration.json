@@ -8,15 +8,10 @@
   },
   "version": "0.1.8",
   "docker_image": "ghcr.io/gboulvin/gladys-immich:0.1.8",
-  "gladys_version": ">=4.86.0",
+  "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg?v=0.1.7-cover-800x534",
-  "categories": [
-    "multimedia"
-  ],
-  "transports": [
-    "local",
-    "cloud"
-  ],
+  "categories": ["multimedia"],
+  "transports": ["local", "cloud"],
   "config_schema": [
     {
       "key": "intro",
@@ -413,6 +408,98 @@
         "fr": "Actualiser le diaporama 2 maintenant"
       },
       "timeout_seconds": 30
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "show_next_photo",
+      "label": {
+        "en": "Show the next Immich photo",
+        "fr": "Afficher la photo Immich suivante"
+      },
+      "description": {
+        "en": "Puts the next photo on a slideshow camera now. Follow it with “Send camera image” to send that photo in a message.",
+        "fr": "Affiche tout de suite la photo suivante sur une caméra de diaporama. Enchaînez avec « Envoyer l’image de la caméra » pour l’envoyer par message."
+      },
+      "timeout_seconds": 45,
+      "fields": [
+        {
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Slideshow camera",
+            "fr": "Caméra du diaporama"
+          },
+          "required": true
+        },
+        {
+          "key": "refresh",
+          "type": "boolean",
+          "label": {
+            "en": "Re-read the Immich source first",
+            "fr": "Relire d’abord la source Immich"
+          },
+          "description": {
+            "en": "Fetches the album or today’s memories again before choosing the photo.",
+            "fr": "Redemande l’album ou les souvenirs du jour avant de choisir la photo."
+          },
+          "default": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "displayed",
+          "type": "boolean",
+          "label": {
+            "en": "Photo displayed",
+            "fr": "Photo affichée"
+          }
+        },
+        {
+          "key": "file_name",
+          "type": "string",
+          "label": {
+            "en": "Photo file name",
+            "fr": "Nom du fichier de la photo"
+          }
+        },
+        {
+          "key": "source_name",
+          "type": "string",
+          "label": {
+            "en": "Album or memories",
+            "fr": "Album ou souvenirs"
+          }
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "immich_photo",
+      "label": {
+        "en": "Immich photo",
+        "fr": "Photo Immich"
+      },
+      "description": {
+        "en": "The photo on a slideshow camera, its caption and state, with next and refresh buttons.",
+        "fr": "La photo d’une caméra de diaporama, sa légende et son état, avec suivante et actualiser."
+      },
+      "icon": "image",
+      "settings": [
+        {
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Slideshow camera",
+            "fr": "Caméra du diaporama"
+          },
+          "required": true
+        }
+      ],
+      "action_timeout_seconds": 45
     }
   ]
 }
