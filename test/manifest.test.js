@@ -2,16 +2,28 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.js';
+import { DEVICE_BLUEPRINTS } from '../src/devices/index.js';
+import { SCENE_ACTIONS } from '../src/scenes.js';
+import { WIDGETS } from '../src/widgets.js';
 
 const manifest = JSON.parse(
   await readFile(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
 );
+const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const allFields = [
+  ...manifest.config_schema,
+  ...[...(manifest.actions ?? []), ...(manifest.scene_actions ?? [])].flatMap(
+    (action) => action.fields ?? [],
+  ),
+  ...(manifest.widgets ?? []).flatMap((widget) => widget.settings ?? []),
+];
+const keysOf = (list) => (list ?? []).map((entry) => entry.key);
 
 test('declares an installable Gladys device integration', () => {
   assert.equal(manifest.manifest_version, 1);
   assert.equal(manifest.type, 'device');
   assert.match(manifest.name, /^Immich Slideshow$/);
-  assert.match(manifest.gladys_version, /4\.86/);
+  assert.match(manifest.gladys_version, /^>=5\.1\.0$/);
   assert.match(manifest.docker_image, /^ghcr\.io\/.+:.+$/);
   assert.match(manifest.cover_image, /^https:\/\//);
   assert.ok(manifest.description.en.length >= 10);
@@ -94,4 +106,110 @@ test('uses purely presentational documentation sections', () => {
   }
   assert.ok(sections[0].links.every((link) => link.url.startsWith('https://')));
   assert.match(sections[1].label.fr, /Diaporama 2/);
+});
+
+test('every manifest action has a handler, and every handler is declared', () => {
+  const declared = manifest.actions.map((action) => action.key);
+  const handled = DEVICE_BLUEPRINTS.flatMap((blueprint) => Object.keys(blueprint.actions ?? {}));
+  for (const key of declared) {
+    assert.ok(handled.includes(key), `manifest action "${key}" has no handler`);
+  }
+  for (const key of handled) {
+    assert.ok(declared.includes(key), `handler "${key}" is not declared in the manifest actions`);
+  }
+});
+
+test('the manifest version is the package version, and the image is tagged with it', () => {
+  // The Release workflow writes all three: a mismatch means one was edited by
+  // hand, and Gladys would offer a version whose image is another one.
+  assert.equal(manifest.version, pkg.version, 'manifest version must match package.json');
+  assert.ok(
+    manifest.docker_image.endsWith(`:${manifest.version}`),
+    `docker_image must be tagged :${manifest.version}, got "${manifest.docker_image}"`,
+  );
+});
+
+test('the catalog description holds 10 to 100 characters per language', () => {
+  for (const [lang, text] of Object.entries(manifest.description)) {
+    assert.ok(
+      text.length >= 10 && text.length <= 100,
+      `description.${lang} has ${text.length} characters (10 to 100 allowed)`,
+    );
+  }
+});
+
+test('every text is a multi-language object with English and French', () => {
+  const texts = [
+    ...allFields.flatMap((field) => [
+      ['label', field.key, field.label],
+      ['description', field.key, field.description],
+      ['placeholder', field.key, field.placeholder],
+      ...(field.options ?? []).map((option) => ['option', field.key, option.label]),
+      ...(field.links ?? []).map((link) => ['link', field.key, link.label]),
+    ]),
+    ...manifest.actions.map((action) => ['action', action.key, action.label]),
+    ...[...manifest.scene_actions, ...manifest.widgets].flatMap((item) => [
+      ['label', item.key, item.label],
+      ['description', item.key, item.description],
+    ]),
+    ...manifest.scene_actions.flatMap((action) =>
+      action.outputs.map((output) => ['output', output.key, output.label]),
+    ),
+  ].filter(([, , text]) => text !== undefined);
+
+  for (const [kind, key, text] of texts) {
+    assert.equal(typeof text, 'object', `${kind} of "${key}" must be a multi-language object`);
+    assert.ok(text.en && text.fr, `${kind} of "${key}" needs English and French texts`);
+  }
+});
+
+test('section fields store no value', () => {
+  for (const section of manifest.config_schema.filter((field) => field.type === 'section')) {
+    assert.equal(section.placeholder, undefined, `section "${section.key}" has a placeholder`);
+    assert.ok(!(section.key in DEFAULT_CONFIG), `section "${section.key}" leaks into the config`);
+  }
+});
+
+test('scene actions and widgets require Gladys >= 5.1.0', () => {
+  // Older cores reject unknown manifest fields, and the store validator
+  // refuses a lower minimum.
+  const [, major, minor] = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/).map(Number);
+  assert.ok(major > 5 || (major === 5 && minor >= 1), manifest.gladys_version);
+  assert.equal(manifest.scene_triggers, undefined, 'no trigger is fired by the code');
+});
+
+test('every scene_actions key has a handler, and vice versa', () => {
+  const declared = keysOf(manifest.scene_actions);
+  assert.deepEqual(declared.sort(), Object.keys(SCENE_ACTIONS).sort());
+  for (const action of manifest.scene_actions) {
+    assert.ok(action.outputs.length > 0, `scene action "${action.key}" declares its outputs`);
+    assert.ok(action.timeout_seconds >= 5 && action.timeout_seconds <= 120);
+  }
+});
+
+test('every widgets key has a content handler, and vice versa', () => {
+  const declared = keysOf(manifest.widgets);
+  assert.deepEqual(declared.sort(), Object.keys(WIDGETS).sort());
+  for (const key of declared) {
+    assert.equal(typeof WIDGETS[key].get, 'function', `widget "${key}" has no content handler`);
+    assert.match(key, /^[a-z0-9_]{2,32}$/);
+  }
+  // A store rule, like the catalog description.
+  for (const widget of manifest.widgets) {
+    for (const [lang, text] of Object.entries(widget.description ?? {})) {
+      assert.ok(
+        text.length <= 100,
+        `widget ${widget.key} description.${lang}: ${text.length} > 100`,
+      );
+    }
+  }
+});
+
+test('dynamic selects declare a source and no static options', () => {
+  const dynamicSelects = allFields.filter((field) => field.source !== undefined);
+  assert.ok(dynamicSelects.length >= 2, 'the scene action and the widget pick a camera');
+  for (const field of dynamicSelects) {
+    assert.equal(field.source, 'devices');
+    assert.equal(field.options, undefined, `field "${field.key}": source and options together`);
+  }
 });

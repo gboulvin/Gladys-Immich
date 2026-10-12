@@ -2,7 +2,7 @@
 
 > **Une intégration externe Gladys qui affiche un ou plusieurs albums Immich, ou les souvenirs « ce jour-là », sous la forme d’une caméra virtuelle sur le dashboard.**
 
-Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama réellement utilisable avec Gladys **4.86+**. Le widget Photo natif de cette version repose encore sur une liste d’URL gérée manuellement ; il ne propose pas d’API publique de source de photos externe. L’adaptateur caméra est donc le moyen compatible de présenter immédiatement les photos Immich dans le dashboard, tandis que la couche `photoProvider` isole le futur raccordement à un tel contrat de widget [2] [3].
+Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama sur le dashboard Gladys **5.1+**, complété par un **widget de dashboard** (photo courante, légende, état, boutons) et une **action de scène** (afficher la photo suivante), deux capacités apportées par le SDK 0.14+ [2] [3].
 
 L’intégration est classée dans la catégorie de catalogue **multimédia**, car elle affiche des photos Immich sous forme de diaporama sur le dashboard.
 
@@ -32,7 +32,9 @@ La séparation entre le client HTTP, la résolution de la source et le moteur de
 
 | Chemin                                                               | Responsabilité                                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`index.js`](./index.js)                                             | Cycle de vie SDK, configuration, découverte de la caméra et actions Gladys.        |
+| [`index.js`](./index.js)                                             | Création du client SDK, arrêt propre et connexion.                                 |
+| [`src/app.js`](./src/app.js)                                         | Câblage SDK : découverte, actions, configuration, état de connexion et badges.     |
+| [`src/transport.js`](./src/transport.js)                             | Badge local / cloud déduit de l’URL Immich.                                        |
 | [`src/config.js`](./src/config.js)                                   | Valeurs par défaut, limites et messages de validation localisés.                   |
 | [`src/immichClient.js`](./src/immichClient.js)                       | Requêtes HTTP authentifiées, délais et erreurs Immich explicites.                  |
 | [`src/photoProvider.js`](./src/photoProvider.js)                     | Albums, souvenirs, filtrage vidéo, dédoublonnage, ordre et métadonnées de légende. |
@@ -50,7 +52,7 @@ Après enregistrement, lancez **Tester la connexion Immich**, créez l’apparei
 
 ## Développement local
 
-Le projet nécessite Node.js 20 ou version ultérieure ; l’image de production s’appuie sur Node 24 Alpine. Installez les dépendances puis lancez l’ensemble des contrôles :
+Le projet nécessite Node.js 22 ou version ultérieure ; l’image de production s’appuie sur Node 24 Alpine. Installez les dépendances puis lancez l’ensemble des contrôles :
 
 ```bash
 npm ci
@@ -67,7 +69,7 @@ LOG_LEVEL=debug \
 npm start
 ```
 
-Les tests unitaires couvrent la validation de configuration, le client HTTP et ses erreurs, la sélection/déduplication des actifs, le cache du diaporama, l’état vide et la cohérence du manifeste. Pour contrôler le manifeste avec l’outil du catalogue avant publication, utilisez :
+Les tests unitaires couvrent la validation de configuration, le client HTTP et ses erreurs, la sélection/déduplication des actifs, le cache du diaporama, l’état vide, le badge de transport et la cohérence du manifeste avec le code. Le câblage complet (`src/app.js`) est testé contre le faux Gladys du SDK (`@gladysassistant/integration-sdk/testing`), qui refuse les données que Gladys refuserait. Chaque modification visible par l’utilisateur ajoute une ligne sous `## [Unreleased]` dans [`CHANGELOG.md`](./CHANGELOG.md) ; le workflow **Release** déplace cette section sous la version publiée et en fait les notes de la GitHub Release. Pour contrôler le manifeste avec l’outil du catalogue avant publication, utilisez :
 
 ```bash
 npx github:GladysAssistant/integration-store .
@@ -79,9 +81,14 @@ Le dépôt conserve les workflows GitHub Actions du template pour bâtir une ima
 
 Une fois le dépôt public, ajoutez le sujet GitHub `gladys-assistant-integration`, rendez le package GHCR public, puis exécutez **Actions → Release → Run workflow**. Le workflow incrémente les versions, crée le tag et publie l’image multi-architecture. Le catalogue Gladys indexe ensuite le manifeste et l’image publiquement disponibles [3].
 
-## Limite de périmètre documentée
+## Widget et action de scène
 
-La proposition communautaire cible, à terme, des modes **« Immich — Album »** et **« Immich — Memories »** au sein du widget Photo, avec sélecteur d’album et légendes [8]. Cela exige une extension du cœur Gladys : la documentation des intégrations externes ne recense pour l’instant que les types `device`, `communication` et `weather`, sans API de fournisseur photo ni d’extension de widget [3]. Cette intégration ne prétend donc pas modifier le widget Photo actuel. Elle fournit le résultat visible demandé — un diaporama dynamique de photos Immich sur le dashboard — via l’API caméra publiée et elle prépare la logique de source pour l’évolution native.
+| Capacité            | Clé du manifeste  | Code                                 | Rôle                                                                                     |
+| ------------------- | ----------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Widget de dashboard | `immich_photo`    | [`src/widgets.js`](./src/widgets.js) | Photo courante d’une caméra (focale 16:9), légende, état, boutons suivante / actualiser. |
+| Action de scène     | `show_next_photo` | [`src/scenes.js`](./src/scenes.js)   | Affiche la photo suivante ; sorties `displayed`, `file_name`, `source_name`.             |
+
+Les deux choisissent la caméra par un sélecteur dynamique `"source": "devices"`. Le widget sert lui-même ses images via `onWidgetGetImage`, à partir des trois dernières diapositives gardées par chaque caméra ; la clé d’image change avec la photo et l’option de légende, car le cœur met une image en cache une heure par clé. Le contenu a pour TTL l’intervalle du diaporama, et chaque nouvelle diapositive déclenche `requestWidgetRefresh`. Ces champs imposent `gladys_version >= 5.1.0`, vérifié par `test/manifest.test.js`.
 
 ## Licence
 
@@ -96,4 +103,3 @@ Apache-2.0.
 [5]: https://api.immich.app/endpoints/albums/getAlbumInfo 'Immich — lecture d’un album'
 [6]: https://api.immich.app/endpoints/memories/searchMemories 'Immich — recherche des souvenirs'
 [7]: https://api.immich.app/endpoints/assets/viewAsset 'Immich — aperçu d’un média'
-[8]: https://community.gladysassistant.com/t/integration-immich 'Spécification communautaire Immich'

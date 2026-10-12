@@ -1,22 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
 import { normalizeConfig } from '../src/config.js';
+import { ImmichApiError } from '../src/immichClient.js';
 import {
   createSlideshowCamera,
   secondSlideshowCamera,
   slideshowCamera,
 } from '../src/devices/slideshowCamera.js';
+import { EmptyPhotoSourceError } from '../src/slideshow.js';
 
-function createGladysIds() {
-  return {
-    externalIds(type, platformId) {
-      return {
-        device: `ext:${type}:${platformId}`,
-        feature: (feature) => `ext:${type}:${platformId}:${feature}`,
-      };
-    },
-  };
-}
+// The fake Gladys of the SDK builds the external ids exactly like production,
+// with the `test-integration` selector.
+const createGladysIds = () => createFakeGladys();
 
 test('declares required numeric bounds for each camera image feature', () => {
   const gladys = createGladysIds();
@@ -38,8 +34,8 @@ test('declares two independently creatable virtual camera devices', () => {
   const first = slideshowCamera.buildDevice(gladys);
   const second = secondSlideshowCamera.buildDevice(gladys);
 
-  assert.equal(first.external_id, 'ext:camera:immich-slideshow');
-  assert.equal(second.external_id, 'ext:camera:immich-slideshow-2');
+  assert.equal(first.external_id, 'ext:test-integration:camera:immich-slideshow');
+  assert.equal(second.external_id, 'ext:test-integration:camera:immich-slideshow-2');
   assert.notEqual(first.external_id, second.external_id);
   assert.equal(first.name, 'Immich slideshow');
   assert.equal(second.name, 'Immich slideshow 2');
@@ -109,4 +105,67 @@ test('routes each camera to its own normalized slideshow profile and runtime', a
       },
     ],
   );
+});
+
+test('Gladys accepts the discovered cameras', async () => {
+  const gladys = createFakeGladys();
+  await gladys.publishDiscoveredDevices([
+    slideshowCamera.buildDevice(gladys),
+    secondSlideshowCamera.buildDevice(gladys),
+  ]);
+  assert.equal(gladys.fake.discoveredDevices.length, 2);
+});
+
+test('reports the transport from the Immich URL and the last outcome', () => {
+  const local = normalizeConfig({
+    immich_url: 'http://192.168.1.20:2283',
+    api_key: 'key',
+    album_id: 'album',
+  });
+  const remote = normalizeConfig({
+    immich_url: 'https://photos.example.net',
+    api_key: 'key',
+    album_id: 'album',
+  });
+
+  assert.equal(slideshowCamera.transport(normalizeConfig({}), undefined), null);
+  assert.deepEqual(slideshowCamera.transport(local, null), { transport: 'local' });
+  assert.deepEqual(slideshowCamera.transport(remote, undefined), { transport: 'cloud' });
+  assert.deepEqual(
+    slideshowCamera.transport(local, new ImmichApiError('down', { code: 'UNREACHABLE' })),
+    { transport: 'unreachable' },
+  );
+
+  const denied = slideshowCamera.transport(remote, new ImmichApiError('no', { status: 401 }));
+  assert.equal(denied.transport, 'cloud');
+  assert.equal(denied.degraded, true);
+  assert.match(denied.message.fr, /clé API/);
+
+  const empty = slideshowCamera.transport(local, new EmptyPhotoSourceError('Album'));
+  assert.equal(empty.degraded, true);
+  assert.match(empty.message.en, /no images/);
+
+  // The second camera reads its own profile only.
+  assert.equal(secondSlideshowCamera.transport(local, null), null);
+});
+
+test('an incomplete profile is degraded when its URL is usable, unreachable otherwise', () => {
+  const noAlbum = normalizeConfig({ immich_url: 'http://nas.local:2283', api_key: 'key' });
+  const noUrl = normalizeConfig({ api_key: 'key', album_id: 'album' });
+
+  const degraded = slideshowCamera.transport(noAlbum, undefined);
+  assert.equal(degraded.transport, 'local');
+  assert.equal(degraded.degraded, true);
+  assert.match(degraded.message.en, /album UUID/);
+  assert.deepEqual(slideshowCamera.transport(noUrl, undefined), { transport: 'unreachable' });
+});
+
+test('every transport entry is accepted by the SDK', async () => {
+  const gladys = createFakeGladys();
+  const config = normalizeConfig({ immich_url: 'https://photos.example.net', api_key: 'key' });
+  const entry = slideshowCamera.transport(config, undefined);
+  await gladys.publishTransports([
+    { external_id: slideshowCamera.deviceExternalId(gladys), ...entry },
+  ]);
+  assert.equal(gladys.fake.transports.length, 1);
 });

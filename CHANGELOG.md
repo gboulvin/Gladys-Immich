@@ -1,0 +1,59 @@
+# Changelog
+
+All notable changes to this integration are documented in this file. The format
+follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
+uses [semantic versioning](https://semver.org/).
+
+Describe each change under `## [Unreleased]` as you make it. The Release
+workflow moves that section under the version it ships, and the section becomes
+the notes of the version's GitHub Release.
+
+## [Unreleased]
+
+### Added
+
+- **Immich photo** dashboard widget: the photo on display on a slideshow
+  camera, its caption, the slideshow state, how Immich is reached, the source
+  and the number of photos, with **Next photo** and **Refresh** buttons. It
+  follows the camera at every new photo and shows the reason when the
+  slideshow fails.
+- **Show the next Immich photo** scene action: moves a slideshow camera on,
+  optionally re-reading the source first, and returns `displayed`, `file_name`
+  and `source_name` for the following actions (for example the built-in
+  “Send camera image”).
+- Each slideshow camera shows a transport badge in Gladys: `local` when the
+  Immich URL points to the home network, `cloud` otherwise, `unreachable` when
+  Immich does not answer, with an orange dot and the reason when Immich answers
+  but the slideshow cannot run (API key refused, empty album, missing album).
+- The connection status turns green again on its own once a failing slideshow
+  recovers, and a successful **Test** or **Refresh** button clears a stale error.
+- `CHANGELOG.md`, rolled by the Release workflow, and a GitHub Release for every
+  version, with its changelog section as notes.
+- CI runs the tests on Node 22 and 24, and builds the Docker image.
+- Dependabot keeps the npm dependencies and the GitHub Actions up to date.
+- `SECURITY.md` (how to report a vulnerability) and `CLAUDE.md` (project rules
+  for contributors and coding assistants).
+- Manifest tests: every action has a handler, `version` matches `package.json`,
+  `docker_image` is tagged with it, descriptions hold 10 to 100 characters,
+  placeholders are multi-language objects.
+
+### Changed
+
+- **Gladys 5.1.0 or later is required**, for the dashboard widget and the
+  scene action.
+- Integration SDK 0.15.0. The tests now run against the fake Gladys of the SDK,
+  which refuses the payloads Gladys refuses.
+- Node.js 22 or later is required (Node 20 is end-of-life).
+
+### Fixed
+
+- The release commit no longer fails `npm run format:check`: the Release
+  workflow updates the manifest `version` and `docker_image` in place instead of
+  re-printing the whole file with `jq`.
+- Captions no longer log a Fontconfig error (“No writable cache directories”)
+  at every slide: the font cache of Sharp now lives on the `/data` volume, the
+  container rootfs being read-only.
+- The integration can write to `/data`: the image creates the directory owned by
+  the `node` user, a new Docker volume was owned by root.
+
+[Unreleased]: https://github.com/gboulvin/Gladys-Immich/commits/main
