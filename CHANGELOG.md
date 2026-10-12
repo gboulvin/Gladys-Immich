@@ -44,6 +44,10 @@ the notes of the version's GitHub Release.
 - Integration SDK 0.15.0. The tests now run against the fake Gladys of the SDK,
   which refuses the payloads Gladys refuses.
 - Node.js 22 or later is required (Node 20 is end-of-life).
+- Sharp 0.35.5 for image resizing and captions.
+- The README is now written in English and describes the two slideshows, the
+  widget, the scene action and the release process.
+- GitHub Actions: `actions/setup-node` v7 and `docker/setup-qemu-action` v4.
 
 ### Fixed
 

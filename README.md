@@ -1,105 +1,123 @@
-# Diaporama Immich pour Gladys
+# Immich Slideshow for Gladys
 
-> **Une intégration externe Gladys qui affiche un ou plusieurs albums Immich, ou les souvenirs « ce jour-là », sous la forme d’une caméra virtuelle sur le dashboard.**
+> **A Gladys external integration that shows one or more Immich albums, or the “on this day” memories, as a slideshow on a virtual dashboard camera.**
 
-Ce projet est construit à partir du [template officiel des intégrations externes JavaScript Gladys][1]. Il utilise une intégration de type `device` et le canal d’images des caméras pour fournir un diaporama sur le dashboard Gladys **5.1+**, complété par un **widget de dashboard** (photo courante, légende, état, boutons) et une **action de scène** (afficher la photo suivante), deux capacités apportées par le SDK 0.14+ [2] [3].
+This project started from the [official Gladys JavaScript external-integration template][1]. It is a `device` integration that uses the camera image channel to run a slideshow on the Gladys **5.1+** dashboard. It also provides an **Immich photo dashboard widget** (current photo, caption, state, buttons) and a **scene action** (show the next photo), two capabilities of the integration SDK 0.15 [2] [3].
 
-L’intégration est classée dans la catégorie de catalogue **multimédia**, car elle affiche des photos Immich sous forme de diaporama sur le dashboard.
+The integration is listed in the **multimedia** catalog category.
 
-## Fonctionnalités
+## Features
 
-| Fonction                | Comportement                                                                                                                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sources Immich**      | Un ou plusieurs albums par UUID, ou souvenirs `on_this_day`, via les API `albums`, `search/metadata` et `memories`.                           |
-| **Affichage dashboard** | Une caméra virtuelle `Immich slideshow`, mise à jour dès la connexion puis au rythme configuré.                                               |
-| **Images**              | Uniquement les éléments `IMAGE` ; les vidéos sont volontairement ignorées en v1.                                                              |
-| **Qualité maîtrisée**   | Aperçu Immich orienté, légende facultative en bas d’image puis redimensionnement/compression JPEG sous la limite caméra Gladys.               |
-| **Performance**         | Liste d’actifs limitée à 1–500 images, actualisée indépendamment du rythme d’affichage ; seul l’aperçu de la photo à afficher est téléchargé. |
-| **Confidentialité**     | Clé API saisie dans un champ Gladys `secret`, donc jamais exposée au navigateur du dashboard.                                                 |
-| **Contrôle**            | Test de connexion, liste des albums, actualisation immédiate, statuts de connexion et erreurs localisées.                                     |
+| Feature                | Behaviour                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Immich sources**     | One or more albums by UUID, merged and deduplicated, or the `on_this_day` memories, through the `albums`, `search/metadata` and `memories` APIs. |
+| **Two slideshows**     | Up to two virtual cameras, **Immich slideshow** and **Immich slideshow 2**, each with its own server, source, intervals and caption setting.     |
+| **Dashboard**          | Each camera publishes its first photo on connection, then at its configured interval.                                                            |
+| **Widget**             | **Immich photo**: the photo on display, caption, slideshow state, local/cloud access, source and photo count, **Next photo** and **Refresh**.    |
+| **Scene action**       | **Show the next Immich photo**, with the `displayed`, `file_name` and `source_name` outputs for the following actions.                           |
+| **Transport badge**    | `local`, `cloud` or `unreachable`, derived from the Immich URL, with the reason when Immich answers but the slideshow cannot run.                |
+| **Images**             | `IMAGE` assets only; videos are deliberately skipped.                                                                                            |
+| **Controlled quality** | Oriented Immich preview, optional caption band at the bottom, then resized and JPEG-compressed under the Gladys camera payload limit.            |
+| **Performance**        | Asset list capped at 1–500 images and refreshed independently of the slide interval; only the preview of the photo on display is fetched.        |
+| **Privacy**            | The API key is a Gladys `secret` field, never sent to the dashboard browser.                                                                     |
+| **Control**            | Connection test, album list, immediate refresh, connection status that recovers on its own, localized errors.                                    |
 
 ## Architecture
 
 ```text
-Immich API ── x-api-key ──► client Immich ──► photoProvider ──► slideshow
-                                                              │
-Gladys SDK ◄── publishCameraImage / onGetImage ◄── caméra virtuelle
-                                                              │
-                                                   Dashboard Gladys
+Immich API ── x-api-key ──► Immich client ──► photoProvider ──► slideshow
+                                                                   │
+Gladys SDK ◄── publishCameraImage / onGetImage ◄── virtual cameras (1 and 2)
+     │                                                             │
+     ├── onWidgetGetImage / requestWidgetRefresh ◄── widget ◄──────┤
+     └── scene action (show_next_photo) ───────────────────────────┘
+                                                                   │
+                                                          Gladys dashboard
 ```
 
-La séparation entre le client HTTP, la résolution de la source et le moteur de diaporama maintient le code testable et évite de coupler la logique Immich au SDK Gladys. L’API Immich actuelle documente les endpoints `GET /albums`, `GET /albums/{id}`, `GET /memories` et `GET /assets/{id}/thumbnail`, avec les permissions associées [4] [5] [6] [7].
+Keeping the HTTP client, the source resolution and the slideshow engine apart keeps the code testable and the Immich logic independent of the Gladys SDK. The current Immich API documents the `GET /albums`, `GET /albums/{id}`, `GET /memories` and `GET /assets/{id}/thumbnail` endpoints and their permissions [4] [5] [6] [7].
 
-| Chemin                                                               | Responsabilité                                                                     |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`index.js`](./index.js)                                             | Création du client SDK, arrêt propre et connexion.                                 |
-| [`src/app.js`](./src/app.js)                                         | Câblage SDK : découverte, actions, configuration, état de connexion et badges.     |
-| [`src/transport.js`](./src/transport.js)                             | Badge local / cloud déduit de l’URL Immich.                                        |
-| [`src/config.js`](./src/config.js)                                   | Valeurs par défaut, limites et messages de validation localisés.                   |
-| [`src/immichClient.js`](./src/immichClient.js)                       | Requêtes HTTP authentifiées, délais et erreurs Immich explicites.                  |
-| [`src/photoProvider.js`](./src/photoProvider.js)                     | Albums, souvenirs, filtrage vidéo, dédoublonnage, ordre et métadonnées de légende. |
-| [`src/slideshow.js`](./src/slideshow.js)                             | Cache de liste, actualisation forcée et rotation des diapositives.                 |
-| [`src/imageTransformer.js`](./src/imageTransformer.js)               | Orientation, compression et limite de taille de l’image caméra.                    |
-| [`src/devices/slideshowCamera.js`](./src/devices/slideshowCamera.js) | Adaptateur de caméra virtuelle Gladys.                                             |
+| Path                                                                 | Responsibility                                                                |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [`index.js`](./index.js)                                             | Creates the SDK client, registers the app, connects and shuts down cleanly.   |
+| [`src/app.js`](./src/app.js)                                         | SDK wiring: discovery, images, actions, configuration, status and badges.     |
+| [`src/config.js`](./src/config.js)                                   | Defaults, limits and localized validation messages.                           |
+| [`src/immichClient.js`](./src/immichClient.js)                       | Authenticated HTTP requests, timeouts and explicit Immich errors.             |
+| [`src/photoProvider.js`](./src/photoProvider.js)                     | Albums, memories, video filtering, deduplication, order and caption metadata. |
+| [`src/slideshow.js`](./src/slideshow.js)                             | List cache, forced refresh and slide rotation.                                |
+| [`src/imageTransformer.js`](./src/imageTransformer.js)               | Orientation, caption, compression and size limit of the camera image.         |
+| [`src/transport.js`](./src/transport.js)                             | Local / cloud badge derived from the Immich URL.                              |
+| [`src/devices/index.js`](./src/devices/index.js)                     | Registry of the cameras and dispatch helpers.                                 |
+| [`src/devices/slideshowCamera.js`](./src/devices/slideshowCamera.js) | One Gladys virtual camera per slideshow profile.                              |
+| [`src/widgets.js`](./src/widgets.js)                                 | `immich_photo` dashboard widget.                                              |
+| [`src/scenes.js`](./src/scenes.js)                                   | `show_next_photo` scene action.                                               |
 
-## Configuration utilisateur
+## User setup
 
-Créez dans Immich une clé API disposant des permissions `album.read`, `asset.read`, `asset.view` et `memory.read`. Dans Gladys, ouvrez l’intégration puis entrez l’URL de votre serveur, par exemple `http://192.168.1.20:2283`, et la clé API. Pour un ou plusieurs albums, utilisez **Lister les albums Immich** : l’action affiche les noms, UUID et nombres d’éléments ; saisissez les UUID retenus dans le formulaire, séparés par des virgules ou des retours à la ligne. Activez **Afficher la légende Immich** pour intégrer la description, le lieu et la date de prise de vue disponibles dans un bandeau au bas du visuel. Évitez `localhost`, qui désigne le conteneur isolé de l’intégration et non votre serveur Immich.
+In Immich, create an API key with the `album.read`, `asset.read`, `asset.view` and `memory.read` permissions. In Gladys, open the integration and enter your server URL, for example `http://192.168.1.20:2283`, and the API key. For albums, use **List Immich albums**: it returns each album name, UUID and asset count; enter the chosen UUIDs in the form, separated by commas or line breaks. Enable **Show Immich caption** to burn the available description, location and capture date into a band at the bottom of the image. Avoid `localhost`: it points to the integration’s isolated container, not to your Immich server.
 
-Après enregistrement, lancez **Tester la connexion Immich**, créez l’appareil **Immich slideshow** dans l’onglet **Découverte**, puis ajoutez cette caméra au dashboard. Consultez la documentation utilisateur complète : [français](./docs/fr.md) et [English](./docs/en.md).
+Once saved, run **Test Immich connection**, create the **Immich slideshow** device in the **Discovery** tab, then add that camera to a dashboard. Fill in the **Slideshow 2** fields to create a second, fully independent camera. See the full user documentation: [English](./docs/en.md) and [français](./docs/fr.md).
 
-> La source « souvenirs » se renouvelle naturellement chaque jour. Configurez un intervalle d’actualisation de la source raisonnable — une heure par défaut — et utilisez **Actualiser le diaporama maintenant** pour forcer la prise en compte d’une modification.
+> The memories source changes every day. Keep a reasonable source refresh interval — one hour by default — and use **Refresh slideshow now** to apply a change immediately.
 
-## Développement local
+## Widget and scene action
 
-Le projet nécessite Node.js 22 ou version ultérieure ; l’image de production s’appuie sur Node 24 Alpine. Installez les dépendances puis lancez l’ensemble des contrôles :
+| Capability       | Manifest key      | Code                                 | Role                                                                            |
+| ---------------- | ----------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| Dashboard widget | `immich_photo`    | [`src/widgets.js`](./src/widgets.js) | Current photo of a camera (16:9 focus), caption, state, next / refresh buttons. |
+| Scene action     | `show_next_photo` | [`src/scenes.js`](./src/scenes.js)   | Shows the next photo; outputs `displayed`, `file_name`, `source_name`.          |
+
+Both pick the camera through a dynamic `"source": "devices"` selector. The widget serves its own images through `onWidgetGetImage`, from the last three slides each camera keeps; the image key changes with the photo and the caption option, since the core caches an image for an hour per key. The content TTL is the slide interval, and every new slide calls `requestWidgetRefresh`. These fields require `gladys_version >= 5.1.0`, which `test/manifest.test.js` checks.
+
+## Local development
+
+The project needs Node.js 22 or later; the production image runs on Node 24 Alpine. Install the dependencies, then run every check:
 
 ```bash
 npm ci
 npm run check
 ```
 
-Pour exécuter l’intégration contre une instance Gladys configurée en mode développeur, fournissez les trois variables injectées automatiquement par le superviseur en production :
+To run the integration against a Gladys instance in developer mode, provide the three variables the supervisor injects in production:
 
 ```bash
 GLADYS_HOST_API_URL="http://localhost:1443" \
-GLADYS_INTEGRATION_TOKEN="<token développeur>" \
+GLADYS_INTEGRATION_TOKEN="<developer token>" \
 GLADYS_INTEGRATION_SELECTOR="immich-slideshow" \
 LOG_LEVEL=debug \
 npm start
 ```
 
-Les tests unitaires couvrent la validation de configuration, le client HTTP et ses erreurs, la sélection/déduplication des actifs, le cache du diaporama, l’état vide, le badge de transport et la cohérence du manifeste avec le code. Le câblage complet (`src/app.js`) est testé contre le faux Gladys du SDK (`@gladysassistant/integration-sdk/testing`), qui refuse les données que Gladys refuserait. Chaque modification visible par l’utilisateur ajoute une ligne sous `## [Unreleased]` dans [`CHANGELOG.md`](./CHANGELOG.md) ; le workflow **Release** déplace cette section sous la version publiée et en fait les notes de la GitHub Release. Pour contrôler le manifeste avec l’outil du catalogue avant publication, utilisez :
+The unit tests cover configuration validation, the HTTP client and its errors, asset selection and deduplication, the slideshow cache, the empty state, the transport badge, the widget, the scene action, the release script and the consistency between the manifest and the code. The full wiring (`src/app.js`) is tested against the SDK’s fake Gladys (`@gladysassistant/integration-sdk/testing`), which refuses the payloads Gladys refuses. The CI runs the checks on Node 22 and 24 and builds the Docker image; Dependabot keeps the npm dependencies and the GitHub Actions up to date.
+
+Every user-visible change adds a line under `## [Unreleased]` in [`CHANGELOG.md`](./CHANGELOG.md). To check the manifest with the catalog tool before publishing:
 
 ```bash
 npx github:GladysAssistant/integration-store .
 ```
 
-## Publication
+## Publishing
 
-Le dépôt conserve les workflows GitHub Actions du template pour bâtir une image `linux/amd64` et `linux/arm64` vers GHCR. Les références `docker_image` et `cover_image` du manifeste sont déjà alignées sur `gboulvin/Gladys-Immich`. Le workflow publiera l’image multi-architecture sous `ghcr.io/gboulvin/gladys-immich`. La couverture `cover.jpg` respecte le format exigé par le catalogue : JPEG de **800 × 534 px** et moins de **150 KB** [3].
+Run **Actions → Release → Run workflow** and pick the version bump. The workflow:
 
-Une fois le dépôt public, ajoutez le sujet GitHub `gladys-assistant-integration`, rendez le package GHCR public, puis exécutez **Actions → Release → Run workflow**. Le workflow incrémente les versions, crée le tag et publie l’image multi-architecture. Le catalogue Gladys indexe ensuite le manifeste et l’image publiquement disponibles [3].
+1. bumps `package.json`, `package-lock.json` and the manifest (`version` and the `docker_image` tag);
+2. moves the `[Unreleased]` section of `CHANGELOG.md` under the new version;
+3. commits the bump and pushes the `vX.Y.Z` tag;
+4. builds and pushes the `linux/amd64` + `linux/arm64` image to `ghcr.io/gboulvin/gladys-immich` (`:X.Y.Z` and `:latest`);
+5. publishes the GitHub Release of the tag, with its changelog section as notes.
 
-## Widget et action de scène
+The repository needs the `gladys-assistant-integration` topic and a public GHCR package: the Gladys catalog then indexes the manifest and the image [3]. The `cover.jpg` cover follows the catalog format: an **800 × 534 px** JPEG under **150 KB** [3].
 
-| Capacité            | Clé du manifeste  | Code                                 | Rôle                                                                                     |
-| ------------------- | ----------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Widget de dashboard | `immich_photo`    | [`src/widgets.js`](./src/widgets.js) | Photo courante d’une caméra (focale 16:9), légende, état, boutons suivante / actualiser. |
-| Action de scène     | `show_next_photo` | [`src/scenes.js`](./src/scenes.js)   | Affiche la photo suivante ; sorties `displayed`, `file_name`, `source_name`.             |
-
-Les deux choisissent la caméra par un sélecteur dynamique `"source": "devices"`. Le widget sert lui-même ses images via `onWidgetGetImage`, à partir des trois dernières diapositives gardées par chaque caméra ; la clé d’image change avec la photo et l’option de légende, car le cœur met une image en cache une heure par clé. Le contenu a pour TTL l’intervalle du diaporama, et chaque nouvelle diapositive déclenche `requestWidgetRefresh`. Ces champs imposent `gladys_version >= 5.1.0`, vérifié par `test/manifest.test.js`.
-
-## Licence
+## License
 
 Apache-2.0.
 
-## Références
+## References
 
-[1]: https://github.com/GladysAssistant/integration-template-js 'Template officiel des intégrations externes JavaScript'
-[2]: https://community.gladysassistant.com/t/integration-immich 'Proposition communautaire de l’intégration Immich'
-[3]: https://gladysassistant.com/docs/dev/external-integrations/ 'Documentation officielle des intégrations externes Gladys'
-[4]: https://api.immich.app/endpoints/albums/getAllAlbums 'Immich — liste des albums'
-[5]: https://api.immich.app/endpoints/albums/getAlbumInfo 'Immich — lecture d’un album'
-[6]: https://api.immich.app/endpoints/memories/searchMemories 'Immich — recherche des souvenirs'
-[7]: https://api.immich.app/endpoints/assets/viewAsset 'Immich — aperçu d’un média'
+[1]: https://github.com/GladysAssistant/integration-template-js 'Official Gladys JavaScript external-integration template'
+[2]: https://community.gladysassistant.com/t/integration-immich 'Community proposal for the Immich integration'
+[3]: https://gladysassistant.com/docs/dev/external-integrations/ 'Gladys external integrations documentation'
+[4]: https://api.immich.app/endpoints/albums/getAllAlbums 'Immich — list albums'
+[5]: https://api.immich.app/endpoints/albums/getAlbumInfo 'Immich — album info'
+[6]: https://api.immich.app/endpoints/memories/searchMemories 'Immich — search memories'
+[7]: https://api.immich.app/endpoints/assets/viewAsset 'Immich — view asset'
