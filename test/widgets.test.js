@@ -68,7 +68,7 @@ test('the caption band switches the image key and hides the duplicate text', asy
     config: { ...FIRST_PROFILE, show_caption: true },
   });
   const ack = await gladys.fake.widgetGet(PHOTO_WIDGET, { settings });
-  assert.match(ofType(ack, 'image')[0].key, /^slide-1c-/);
+  assert.match(ofType(ack, 'image')[0].key, /^slide-1cfr-/);
   assert.equal(ofType(ack, 'text').length, 0);
 });
 

@@ -6,6 +6,8 @@
 // camera device and keeps its own Immich server, source and display settings.
 // -----------------------------------------------------------------------------
 
+import { DEFAULT_CAPTION_LANGUAGE, isLanguage } from './i18n.js';
+
 export const SOURCE_MODES = Object.freeze({
   ALBUM: 'album',
   MEMORIES: 'memories',
@@ -24,6 +26,7 @@ const PROFILE_KEYS = Object.freeze([
   'max_assets',
   'random_order',
   'show_caption',
+  'caption_language',
 ]);
 
 const DEFAULT_SLIDESHOW_CONFIG = Object.freeze({
@@ -37,6 +40,7 @@ const DEFAULT_SLIDESHOW_CONFIG = Object.freeze({
   max_assets: 200,
   random_order: false,
   show_caption: false,
+  caption_language: DEFAULT_CAPTION_LANGUAGE,
 });
 
 function keyForProfile(key, suffix = '') {
@@ -144,6 +148,9 @@ function normalizeSlideshowProfile(raw, suffix = '') {
     show_caption:
       raw[keyForProfile('show_caption', suffix)] === true ||
       raw[keyForProfile('show_caption', suffix)] === 'true',
+    caption_language: isLanguage(raw[keyForProfile('caption_language', suffix)])
+      ? raw[keyForProfile('caption_language', suffix)]
+      : DEFAULT_CAPTION_LANGUAGE,
   };
 }
 
@@ -189,12 +196,16 @@ export function validateConnectionConfig(config) {
     return {
       en: 'Enter a valid Immich server URL (http:// or https://).',
       fr: 'Saisissez une URL de serveur Immich valide (http:// ou https://).',
+      de: 'Geben Sie eine gültige Immich-Server-URL ein (http:// oder https://).',
+      es: 'Introduzca una URL válida del servidor Immich (http:// o https://).',
     };
   }
   if (!config.api_key) {
     return {
       en: 'Enter an Immich API key with album, asset, and memory read access.',
       fr: 'Saisissez une clé API Immich avec les droits de lecture des albums, médias et souvenirs.',
+      de: 'Geben Sie einen Immich-API-Schlüssel mit Leserechten für Alben, Medien und Erinnerungen ein.',
+      es: 'Introduzca una clave API de Immich con permiso de lectura de álbumes, medios y recuerdos.',
     };
   }
   return null;
@@ -213,6 +224,8 @@ export function validateConfig(config) {
     return {
       en: 'Enter at least one Immich album UUID to display.',
       fr: 'Saisissez au moins un UUID d’album Immich à afficher.',
+      de: 'Geben Sie mindestens eine UUID eines anzuzeigenden Immich-Albums ein.',
+      es: 'Introduzca al menos un UUID de álbum de Immich que mostrar.',
     };
   }
   return null;

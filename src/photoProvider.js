@@ -8,6 +8,16 @@
 // -----------------------------------------------------------------------------
 
 import { SOURCE_MODES } from './config.js';
+import { DEFAULT_CAPTION_LANGUAGE, localeOf, perLanguage } from './i18n.js';
+
+const MEMORIES_SOURCE_NAME = Object.freeze({
+  en: 'Memories — on this day',
+  fr: 'Souvenirs — ce jour-là',
+  de: 'Erinnerungen — an diesem Tag',
+  es: 'Recuerdos — tal día como hoy',
+});
+
+const ALBUMS_PREFIX = Object.freeze({ en: 'Albums', fr: 'Albums', de: 'Alben', es: 'Álbumes' });
 
 function asArray(value) {
   if (Array.isArray(value)) {
@@ -42,7 +52,7 @@ function shuffle(items, random = Math.random) {
   return result;
 }
 
-function formatDate(value, locale = 'fr-FR') {
+function formatDate(value, locale) {
   const date = assetDate({ fileCreatedAt: value });
   if (!date) {
     return '';
@@ -59,7 +69,7 @@ function formatDate(value, locale = 'fr-FR') {
  * by Immich. The function omits unavailable information rather than inventing
  * it, and the caller may disable captions in its dashboard presentation.
  */
-export function buildCaption(asset, locale = 'fr-FR') {
+export function buildCaption(asset, language = DEFAULT_CAPTION_LANGUAGE) {
   const description = asset.exifInfo?.description?.trim() || asset.description?.trim();
   const location = [asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country]
     .filter(Boolean)
@@ -68,7 +78,7 @@ export function buildCaption(asset, locale = 'fr-FR') {
     .join(', ');
   const date = formatDate(
     asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt ?? asset.localDateTime,
-    locale,
+    localeOf(language),
   );
 
   const parts = [description, location, date].filter(Boolean);
@@ -90,10 +100,9 @@ export function isImage(asset) {
  * is displayed; large albums therefore do not trigger many image downloads.
  */
 export class ImmichPhotoProvider {
-  constructor({ client, random = Math.random, locale = 'fr-FR' }) {
+  constructor({ client, random = Math.random }) {
     this.client = client;
     this.random = random;
-    this.locale = locale;
   }
 
   async listAlbums() {
@@ -112,12 +121,15 @@ export class ImmichPhotoProvider {
     if (config.source_mode === SOURCE_MODES.MEMORIES) {
       const memories = await this.client.getOnThisDayMemories();
       assets = assetsFromMemories(memories);
-      sourceName = 'Memories — on this day';
+      sourceName = MEMORIES_SOURCE_NAME;
     } else {
       const albumIds = config.album_ids;
       const albums = await Promise.all(albumIds.map((albumId) => this.client.getAlbum(albumId)));
       const albumNames = albums.map((album, index) => album.albumName ?? albumIds[index]);
-      sourceName = albumNames.length === 1 ? albumNames[0] : `Albums — ${albumNames.join(', ')}`;
+      sourceName =
+        albumNames.length === 1
+          ? albumNames[0]
+          : perLanguage((language) => `${ALBUMS_PREFIX[language]} — ${albumNames.join(', ')}`);
 
       try {
         // Immich may interpret several `albumIds` as an intersection. Fetch each
@@ -155,7 +167,9 @@ export class ImmichPhotoProvider {
         id: asset.id,
         originalFileName: asset.originalFileName ?? '',
         createdAt: assetDate(asset)?.toISOString() ?? null,
-        caption: buildCaption(asset, this.locale),
+        // One caption per language: the dashboard widget shows the viewer's,
+        // the burned-in band the one of the slideshow settings.
+        caption: perLanguage((language) => buildCaption(asset, language)),
       })),
     };
   }

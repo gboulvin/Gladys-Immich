@@ -16,6 +16,7 @@
 import { createLogger, DEVICE_TRANSPORTS, WIDGET_COLORS } from '@gladysassistant/integration-sdk';
 import { errorMessage, isNetworkError } from './devices/slideshowCamera.js';
 import { findBlueprintByDevice } from './devices/index.js';
+import { mapText, isEmptyText } from './i18n.js';
 import { transportForUrl } from './transport.js';
 
 const logger = createLogger({ name: 'widgets' });
@@ -30,16 +31,21 @@ const MIN_TTL_SECONDS = 10;
 const MAX_TTL_SECONDS = 3_600;
 
 function truncate(text, max) {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  return mapText(text, (value) => (value.length > max ? `${value.slice(0, max - 1)}…` : value));
 }
 
 function stateRow(blueprint, config, health) {
-  const label = { en: 'Slideshow', fr: 'Diaporama' };
+  const label = { en: 'Slideshow', fr: 'Diaporama', de: 'Diashow', es: 'Pase de fotos' };
   if (!blueprint.isReady(config)) {
     return {
       label,
       icon: 'settings',
-      value: { en: 'Not configured', fr: 'Non configuré' },
+      value: {
+        en: 'Not configured',
+        fr: 'Non configuré',
+        de: 'Nicht eingerichtet',
+        es: 'Sin configurar',
+      },
       color: WIDGET_COLORS.WARNING,
     };
   }
@@ -49,15 +55,15 @@ function stateRow(blueprint, config, health) {
       label,
       icon: 'alert-triangle',
       value: isNetworkError(error)
-        ? { en: 'Unreachable', fr: 'Injoignable' }
-        : { en: 'Error', fr: 'En erreur' },
+        ? { en: 'Unreachable', fr: 'Injoignable', de: 'Nicht erreichbar', es: 'Inaccesible' }
+        : { en: 'Error', fr: 'En erreur', de: 'Fehler', es: 'Error' },
       color: WIDGET_COLORS.DANGER,
     };
   }
   return {
     label,
     icon: 'play',
-    value: { en: 'Running', fr: 'En cours' },
+    value: { en: 'Running', fr: 'En cours', de: 'Läuft', es: 'En marcha' },
     color: WIDGET_COLORS.SUCCESS,
   };
 }
@@ -65,27 +71,34 @@ function stateRow(blueprint, config, health) {
 function connectionRow(blueprint, config) {
   const local = transportForUrl(blueprint.profile(config).immich_url) === DEVICE_TRANSPORTS.LOCAL;
   return {
-    label: { en: 'Immich server', fr: 'Serveur Immich' },
+    label: {
+      en: 'Immich server',
+      fr: 'Serveur Immich',
+      de: 'Immich-Server',
+      es: 'Servidor Immich',
+    },
     icon: local ? 'home' : 'cloud',
-    value: local ? { en: 'Local', fr: 'Local' } : { en: 'Cloud', fr: 'Cloud' },
+    value: local
+      ? { en: 'Local', fr: 'Local', de: 'Lokal', es: 'Local' }
+      : { en: 'Cloud', fr: 'Cloud', de: 'Cloud', es: 'Nube' },
     color: local ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.INFO,
   };
 }
 
 function sourceRows(blueprint) {
   const { sourceName, loadedImageCount, totalImageCount } = blueprint.getStatus();
-  if (!sourceName) {
+  if (isEmptyText(sourceName)) {
     return [];
   }
   return [
     {
-      label: { en: 'Source', fr: 'Source' },
+      label: { en: 'Source', fr: 'Source', de: 'Quelle', es: 'Origen' },
       icon: 'image',
       value: truncate(sourceName, 40),
       color: WIDGET_COLORS.NEUTRAL,
     },
     {
-      label: { en: 'Photos', fr: 'Photos' },
+      label: { en: 'Photos', fr: 'Photos', de: 'Fotos', es: 'Fotos' },
       icon: 'layers',
       value:
         totalImageCount > loadedImageCount
@@ -114,6 +127,8 @@ export function buildPhotoWidgetContent(gladys, { settings, config, health, blue
           text: {
             en: 'Choose an Immich slideshow camera in the widget settings.',
             fr: 'Choisissez une caméra de diaporama Immich dans les réglages du widget.',
+            de: 'Wählen Sie in den Widget-Einstellungen eine Immich-Diashow-Kamera.',
+            es: 'Elija una cámara de pase de fotos de Immich en los ajustes del widget.',
           },
         },
       ],
@@ -129,17 +144,27 @@ export function buildPhotoWidgetContent(gladys, { settings, config, health, blue
     components.push({
       type: 'image',
       key: slide.imageKey,
-      alt: slide.originalFileName || { en: 'Immich photo', fr: 'Photo Immich' },
+      alt: slide.originalFileName || {
+        en: 'Immich photo',
+        fr: 'Photo Immich',
+        de: 'Immich-Foto',
+        es: 'Foto de Immich',
+      },
       fit: 'contain',
     });
     // The camera image already carries the caption band when it is enabled.
-    if (slide.caption && !profile.show_caption) {
+    if (!isEmptyText(slide.caption) && !profile.show_caption) {
       components.push({ type: 'text', variant: 'caption', text: truncate(slide.caption, 80) });
     }
   } else if (blueprint.isReady(config) && !error) {
     components.push({
       type: 'text',
-      text: { en: 'Waiting for the first photo…', fr: 'En attente de la première photo…' },
+      text: {
+        en: 'Waiting for the first photo…',
+        fr: 'En attente de la première photo…',
+        de: 'Warten auf das erste Foto…',
+        es: 'Esperando la primera foto…',
+      },
     });
   }
 
@@ -151,6 +176,8 @@ export function buildPhotoWidgetContent(gladys, { settings, config, health, blue
       text: {
         en: 'Complete the Immich settings of this slideshow in the integration configuration.',
         fr: 'Complétez les réglages Immich de ce diaporama dans la configuration de l’intégration.',
+        de: 'Vervollständigen Sie die Immich-Einstellungen dieser Diashow in der Konfiguration der Integration.',
+        es: 'Complete los ajustes de Immich de este pase en la configuración de la integración.',
       },
     });
   }
@@ -168,14 +195,19 @@ export function buildPhotoWidgetContent(gladys, { settings, config, health, blue
     components.push(
       {
         type: 'button',
-        label: { en: 'Next photo', fr: 'Photo suivante' },
+        label: {
+          en: 'Next photo',
+          fr: 'Photo suivante',
+          de: 'Nächstes Foto',
+          es: 'Foto siguiente',
+        },
         icon: 'skip-forward',
         style: 'primary',
         action: { key: PHOTO_WIDGET_ACTIONS.NEXT },
       },
       {
         type: 'button',
-        label: { en: 'Refresh', fr: 'Actualiser' },
+        label: { en: 'Refresh', fr: 'Actualiser', de: 'Aktualisieren', es: 'Actualizar' },
         icon: 'refresh-cw',
         style: 'secondary',
         action: { key: PHOTO_WIDGET_ACTIONS.REFRESH },
@@ -216,6 +248,8 @@ export const WIDGETS = {
         return {
           en: truncate(`Showing ${slide.originalFileName || 'the next photo'}`, 200),
           fr: truncate(`Affichage de ${slide.originalFileName || 'la photo suivante'}`, 200),
+          de: truncate(`Angezeigt wird ${slide.originalFileName || 'das nächste Foto'}`, 200),
+          es: truncate(`Mostrando ${slide.originalFileName || 'la foto siguiente'}`, 200),
         };
       }
       if (actionKey === PHOTO_WIDGET_ACTIONS.REFRESH) {

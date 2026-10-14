@@ -137,3 +137,36 @@ test('forwards an Immich caption to the renderer only when enabled', async () =>
 
   assert.deepEqual(captions, ['', 'Sunset at home']);
 });
+
+test('burns the caption date in the language of the slideshow settings', async () => {
+  const client = {
+    async getAlbum() {
+      return { albumName: 'Album' };
+    },
+    async getAlbumAssets() {
+      return [{ id: 'image', type: 'IMAGE', fileCreatedAt: '2024-08-12T10:00:00.000Z' }];
+    },
+    async getPreview() {
+      return { contentType: 'image/jpeg', buffer: Buffer.from('image') };
+    },
+  };
+  const captions = [];
+  const slideshow = new ImmichSlideshow({
+    clientFactory: () => client,
+    imageTransformer: async (buffer, options) => {
+      captions.push(options.caption);
+      return { contentType: 'image/jpeg', buffer };
+    },
+  });
+
+  for (const caption_language of ['en', 'fr', 'de', 'es']) {
+    await slideshow.next({ ...config, show_caption: true, caption_language });
+  }
+
+  assert.deepEqual(captions, [
+    '12 August 2024',
+    '12 août 2024',
+    '12. August 2024',
+    '12 de agosto de 2024',
+  ]);
+});

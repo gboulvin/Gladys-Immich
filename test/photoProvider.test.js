@@ -19,7 +19,7 @@ const olderImage = {
 const video = { id: 'video-1', type: 'VIDEO', originalFileName: 'movie.mp4' };
 
 test('builds captions only from available Immich metadata', () => {
-  assert.match(buildCaption(recentImage, 'en-GB'), /Holiday — Rome — 12 August 2024/);
+  assert.match(buildCaption(recentImage, 'en'), /Holiday — Rome — 12 August 2024/);
   assert.equal(buildCaption({ id: 'plain', type: 'IMAGE' }), '');
 });
 
@@ -49,7 +49,10 @@ test('resolves album images most-recent first, filters videos and enforces the c
     result.photos.map((photo) => photo.id),
     ['image-recent'],
   );
-  assert.match(result.photos[0].caption, /Rome/);
+  assert.match(result.photos[0].caption.fr, /Rome — 12 août 2024/);
+  assert.match(result.photos[0].caption.en, /12 August 2024/);
+  assert.match(result.photos[0].caption.de, /12. August 2024/);
+  assert.match(result.photos[0].caption.es, /12 de agosto de 2024/);
 });
 
 test('flattens and deduplicates on-this-day memory assets', async () => {
@@ -94,7 +97,9 @@ test('merges multiple albums, preserves their names and deduplicates shared phot
     max_assets: 10,
   });
 
-  assert.equal(result.sourceName, 'Albums — Family, Holidays');
+  assert.equal(result.sourceName.en, 'Albums — Family, Holidays');
+  assert.equal(result.sourceName.de, 'Alben — Family, Holidays');
+  assert.equal(result.sourceName.es, 'Álbumes — Family, Holidays');
   assert.equal(result.totalImageCount, 2);
   assert.deepEqual(
     result.photos.map((photo) => photo.id),

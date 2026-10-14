@@ -15,6 +15,7 @@
 
 import { createLogger } from '@gladysassistant/integration-sdk';
 import { findBlueprintByDevice } from './devices/index.js';
+import { inLanguage } from './i18n.js';
 
 const logger = createLogger({ name: 'scenes' });
 
@@ -45,7 +46,8 @@ export const SCENE_ACTIONS = {
       return {
         displayed: true,
         file_name: slide.originalFileName ?? '',
-        source_name: slide.sourceName ?? '',
+        // A scene output is one string: the language of the slideshow settings.
+        source_name: inLanguage(slide.sourceName, blueprint.profile(config).caption_language),
       };
     } catch (error) {
       logger.error('show_next_photo failed', error);

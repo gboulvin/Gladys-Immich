@@ -40,11 +40,15 @@ const logger = createLogger({ name: 'immich-app' });
 const NOT_CONFIGURED = Object.freeze({
   en: 'Configure at least one Immich slideshow.',
   fr: 'Configurez au moins un diaporama Immich.',
+  de: 'Richten Sie mindestens eine Immich-Diashow ein.',
+  es: 'Configure al menos un pase de fotos de Immich.',
 });
 
 const INIT_FAILED = Object.freeze({
   en: 'Immich slideshow initialization failed. Check the integration logs.',
   fr: 'L’initialisation du diaporama Immich a échoué. Consultez les journaux de l’intégration.',
+  de: 'Die Initialisierung der Immich-Diashow ist fehlgeschlagen. Prüfen Sie die Protokolle der Integration.',
+  es: 'Falló la inicialización del pase de fotos de Immich. Consulte los registros de la integración.',
 });
 
 // Two outcomes are "the same" when the user would read the same message: a
