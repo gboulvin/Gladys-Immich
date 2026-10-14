@@ -8,11 +8,12 @@
 
 import { ImmichClient } from './immichClient.js';
 import { toCameraImage, asGladysCameraImage } from './imageTransformer.js';
+import { inLanguage } from './i18n.js';
 import { ImmichPhotoProvider } from './photoProvider.js';
 
 export class EmptyPhotoSourceError extends Error {
   constructor(sourceName) {
-    super(`No images are available in “${sourceName}”.`);
+    super(`No images are available in “${inLanguage(sourceName, 'en')}”.`);
     this.name = 'EmptyPhotoSourceError';
     this.code = 'EMPTY_SOURCE';
   }
@@ -129,7 +130,7 @@ export class ImmichSlideshow {
     this.nextIndex = (this.nextIndex + 1) % this.photos.length;
     const preview = await this.provider.getPreview(photo.id);
     const cameraImage = await this.imageTransformer(preview.buffer, {
-      caption: config.show_caption ? photo.caption : '',
+      caption: config.show_caption ? inLanguage(photo.caption, config.caption_language) : '',
     });
 
     return {

@@ -10,6 +10,20 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+### Added
+
+- German and Spanish, next to English and French: settings, action messages,
+  connection and badge messages, the dashboard widget, the scene action, and
+  the user documentation (`docs/de.md`, `docs/es.md`).
+- **Caption language** setting for each slideshow (English, French, German or
+  Spanish, French by default): the language of the date burned into the image
+  and of the source name the scene action returns.
+
+### Changed
+
+- The dashboard widget shows the caption date and the source name (“Memories —
+  on this day”, “Albums — …”) in the language of each viewer.
+
 ## [0.2.0] - 2026-10-12
 
 ### Added

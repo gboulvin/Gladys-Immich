@@ -45,7 +45,8 @@ src/photoProvider.js              albums, memories, video filtering, dedup, capt
 src/slideshow.js                  asset-list cache and slide rotation
 src/imageTransformer.js           orientation, caption band, JPEG under the camera size limit
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+src/i18n.js                       languages (en, fr, de, es), per-language text helpers
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (mandatory)
 test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
@@ -67,7 +68,8 @@ test/                             node --test, against the SDK's fake Gladys (in
 - **Changelog.** Every user-visible change adds a line under `## [Unreleased]`
   in `CHANGELOG.md` (`### Added`, `Changed`, `Fixed`, `Removed`, `Security`).
   Never write a version heading.
-- **Manifest.** Texts are multi-language objects `{ "en": ..., "fr": ... }`.
+- **Manifest.** Texts are multi-language objects
+  `{ "en": ..., "fr": ..., "de": ..., "es": ... }`.
   The catalog `description` holds 10 to 100 characters per language.
   `widgets` and `scene_actions` need `gladys_version >= 5.1.0`, and a widget
   description holds at most 100 characters. `test/manifest.test.js` ties the
@@ -76,7 +78,11 @@ test/                             node --test, against the SDK's fake Gladys (in
 - **Widgets.** Check every content with `validateWidgetContent` (`[]` means
   rendered as sent) and every image with `validateWidgetImage`. A widget image
   is cached one hour by key: a different image needs a different key.
-- **User-facing text** is bilingual (English and French): action messages,
-  status messages, manifest texts, and `docs/en.md` / `docs/fr.md`, in sync.
+- **User-facing text** exists in English, French, German and Spanish
+  (`LANGUAGES` in `src/i18n.js`): action messages, status messages, widget
+  texts, manifest texts and `docs/{en,fr,de,es}.md`, in sync.
+  `test/manifest.test.js` refuses a manifest text missing a language. Texts
+  built from Immich data (caption dates, source names) are built for every
+  language with `perLanguage`.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.js';
 import { DEVICE_BLUEPRINTS } from '../src/devices/index.js';
+import { LANGUAGES } from '../src/i18n.js';
 import { SCENE_ACTIONS } from '../src/scenes.js';
 import { WIDGETS } from '../src/widgets.js';
 
@@ -138,7 +139,7 @@ test('the catalog description holds 10 to 100 characters per language', () => {
   }
 });
 
-test('every text is a multi-language object with English and French', () => {
+test('every text is a multi-language object in English, French, German and Spanish', () => {
   const texts = [
     ...allFields.flatMap((field) => [
       ['label', field.key, field.label],
@@ -159,7 +160,9 @@ test('every text is a multi-language object with English and French', () => {
 
   for (const [kind, key, text] of texts) {
     assert.equal(typeof text, 'object', `${kind} of "${key}" must be a multi-language object`);
-    assert.ok(text.en && text.fr, `${kind} of "${key}" needs English and French texts`);
+    for (const language of LANGUAGES) {
+      assert.ok(text[language], `${kind} of "${key}" needs a "${language}" text`);
+    }
   }
 });
 

@@ -4,7 +4,9 @@
   "name": "Immich Slideshow",
   "description": {
     "en": "Streams an Immich album or memories as a Gladys dashboard camera slideshow.",
-    "fr": "Diffuse un album ou les souvenirs Immich en diaporama caméra sur le dashboard Gladys."
+    "fr": "Diffuse un album ou les souvenirs Immich en diaporama caméra sur le dashboard Gladys.",
+    "de": "Zeigt ein Immich-Album oder Erinnerungen als Diashow einer Gladys-Dashboard-Kamera.",
+    "es": "Muestra un álbum o los recuerdos de Immich como pase de fotos en el dashboard de Gladys."
   },
   "version": "0.2.0",
   "docker_image": "ghcr.io/gboulvin/gladys-immich:0.2.0",
@@ -18,25 +20,33 @@
       "type": "section",
       "label": {
         "en": "Slideshow 1 — connect Immich",
-        "fr": "Diaporama 1 — connecter Immich"
+        "fr": "Diaporama 1 — connecter Immich",
+        "de": "Diashow 1 — Immich verbinden",
+        "es": "Pase 1 — conectar Immich"
       },
       "description": {
         "en": "Create an Immich API key with album.read, asset.read, asset.view, and memory.read permissions. The key is securely stored by Gladys and is never sent to the dashboard browser.",
-        "fr": "Créez une clé API Immich avec les permissions album.read, asset.read, asset.view et memory.read. Gladys stocke cette clé de manière sécurisée ; elle n’est jamais envoyée au navigateur du dashboard."
+        "fr": "Créez une clé API Immich avec les permissions album.read, asset.read, asset.view et memory.read. Gladys stocke cette clé de manière sécurisée ; elle n’est jamais envoyée au navigateur du dashboard.",
+        "de": "Erstellen Sie einen Immich-API-Schlüssel mit den Berechtigungen album.read, asset.read, asset.view und memory.read. Gladys speichert den Schlüssel sicher; er wird nie an den Dashboard-Browser gesendet.",
+        "es": "Cree una clave API de Immich con los permisos album.read, asset.read, asset.view y memory.read. Gladys guarda la clave de forma segura y nunca la envía al navegador del dashboard."
       },
       "links": [
         {
           "url": "https://docs.immich.app/features/administration/user-settings/",
           "label": {
             "en": "Immich user settings",
-            "fr": "Paramètres utilisateur Immich"
+            "fr": "Paramètres utilisateur Immich",
+            "de": "Immich-Benutzereinstellungen",
+            "es": "Ajustes de usuario de Immich"
           }
         },
         {
           "url": "https://api.immich.app/endpoints",
           "label": {
             "en": "Immich API reference",
-            "fr": "Référence de l’API Immich"
+            "fr": "Référence de l’API Immich",
+            "de": "Immich-API-Referenz",
+            "es": "Referencia de la API de Immich"
           }
         }
       ]
@@ -46,15 +56,21 @@
       "type": "string",
       "label": {
         "en": "Immich server URL",
-        "fr": "URL du serveur Immich"
+        "fr": "URL du serveur Immich",
+        "de": "URL des Immich-Servers",
+        "es": "URL del servidor Immich"
       },
       "description": {
         "en": "For example: http://192.168.1.20:2283. The Gladys integration container must be able to reach this address.",
-        "fr": "Par exemple : http://192.168.1.20:2283. Le conteneur d’intégration Gladys doit pouvoir joindre cette adresse."
+        "fr": "Par exemple : http://192.168.1.20:2283. Le conteneur d’intégration Gladys doit pouvoir joindre cette adresse.",
+        "de": "Zum Beispiel: http://192.168.1.20:2283. Der Gladys-Integrationscontainer muss diese Adresse erreichen können.",
+        "es": "Por ejemplo: http://192.168.1.20:2283. El contenedor de la integración de Gladys debe poder acceder a esta dirección."
       },
       "placeholder": {
         "en": "https://immich.example.net",
-        "fr": "https://immich.exemple.net"
+        "fr": "https://immich.exemple.net",
+        "de": "https://immich.beispiel.de",
+        "es": "https://immich.ejemplo.es"
       },
       "required": true
     },
@@ -63,11 +79,15 @@
       "type": "secret",
       "label": {
         "en": "Immich API key",
-        "fr": "Clé API Immich"
+        "fr": "Clé API Immich",
+        "de": "Immich-API-Schlüssel",
+        "es": "Clave API de Immich"
       },
       "placeholder": {
         "en": "Paste the API key",
-        "fr": "Collez la clé API"
+        "fr": "Collez la clé API",
+        "de": "API-Schlüssel einfügen",
+        "es": "Pegue la clave API"
       },
       "required": true
     },
@@ -76,11 +96,15 @@
       "type": "select",
       "label": {
         "en": "Photo source",
-        "fr": "Source des photos"
+        "fr": "Source des photos",
+        "de": "Fotoquelle",
+        "es": "Origen de las fotos"
       },
       "description": {
         "en": "Choose a specific album or Immich memories from this day in previous years.",
-        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes."
+        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes.",
+        "de": "Wählen Sie ein bestimmtes Album oder die Immich-Erinnerungen an diesen Tag in den Vorjahren.",
+        "es": "Elija un álbum concreto o los recuerdos de Immich de este día en años anteriores."
       },
       "required": true,
       "default": "album",
@@ -89,14 +113,18 @@
           "value": "album",
           "label": {
             "en": "Album",
-            "fr": "Album"
+            "fr": "Album",
+            "de": "Album",
+            "es": "Álbum"
           }
         },
         {
           "value": "memories",
           "label": {
             "en": "Memories — on this day",
-            "fr": "Souvenirs — ce jour-là"
+            "fr": "Souvenirs — ce jour-là",
+            "de": "Erinnerungen — an diesem Tag",
+            "es": "Recuerdos — tal día como hoy"
           }
         }
       ]
@@ -106,15 +134,21 @@
       "type": "string",
       "label": {
         "en": "Album UUIDs",
-        "fr": "UUID des albums"
+        "fr": "UUID des albums",
+        "de": "Album-UUIDs",
+        "es": "UUID de los álbumes"
       },
       "description": {
         "en": "Required only when the source is Album. Enter one or more UUIDs separated by commas or line breaks; use “List Immich albums” below to copy them. Leave it empty for Memories.",
-        "fr": "Requis uniquement pour la source Album. Saisissez un ou plusieurs UUID séparés par des virgules ou des retours à la ligne ; utilisez « Lister les albums Immich » ci-dessous pour les copier. Laissez vide pour Souvenirs."
+        "fr": "Requis uniquement pour la source Album. Saisissez un ou plusieurs UUID séparés par des virgules ou des retours à la ligne ; utilisez « Lister les albums Immich » ci-dessous pour les copier. Laissez vide pour Souvenirs.",
+        "de": "Nur für die Quelle „Album“ erforderlich. Geben Sie eine oder mehrere UUIDs ein, getrennt durch Kommas oder Zeilenumbrüche; kopieren Sie sie mit „Immich-Alben auflisten“ unten. Für Erinnerungen leer lassen.",
+        "es": "Solo es obligatorio si el origen es Álbum. Introduzca uno o varios UUID separados por comas o saltos de línea; use «Listar los álbumes de Immich» más abajo para copiarlos. Déjelo vacío para Recuerdos."
       },
       "placeholder": {
         "en": "e.g. 1033b9e2-…, a490c2f0-…",
-        "fr": "ex. 1033b9e2-…, a490c2f0-…"
+        "fr": "ex. 1033b9e2-…, a490c2f0-…",
+        "de": "z. B. 1033b9e2-…, a490c2f0-…",
+        "es": "p. ej. 1033b9e2-…, a490c2f0-…"
       },
       "required": false
     },
@@ -123,11 +157,15 @@
       "type": "number",
       "label": {
         "en": "Slide interval (seconds)",
-        "fr": "Intervalle entre les photos (secondes)"
+        "fr": "Intervalle entre les photos (secondes)",
+        "de": "Bildwechsel-Intervall (Sekunden)",
+        "es": "Intervalo entre fotos (segundos)"
       },
       "description": {
         "en": "How long each image stays on the dashboard camera. The minimum respects Gladys camera-channel limits.",
-        "fr": "Durée d’affichage de chaque image sur la caméra du dashboard. Le minimum respecte les limites du canal caméra Gladys."
+        "fr": "Durée d’affichage de chaque image sur la caméra du dashboard. Le minimum respecte les limites du canal caméra Gladys.",
+        "de": "Wie lange jedes Bild auf der Dashboard-Kamera bleibt. Das Minimum beachtet die Grenzen des Gladys-Kamerakanals.",
+        "es": "Tiempo que cada imagen permanece en la cámara del dashboard. El mínimo respeta los límites del canal de cámara de Gladys."
       },
       "required": true,
       "default": 60,
@@ -139,11 +177,15 @@
       "type": "number",
       "label": {
         "en": "Source refresh interval (seconds)",
-        "fr": "Intervalle d’actualisation de la source (secondes)"
+        "fr": "Intervalle d’actualisation de la source (secondes)",
+        "de": "Aktualisierung der Quelle (Sekunden)",
+        "es": "Actualización del origen (segundos)"
       },
       "description": {
         "en": "How often the integration asks Immich again for the album or today’s memories. Existing slides continue between refreshes.",
-        "fr": "Fréquence à laquelle l’intégration redemande l’album ou les souvenirs du jour à Immich. Les diapositives existantes défilent entre deux actualisations."
+        "fr": "Fréquence à laquelle l’intégration redemande l’album ou les souvenirs du jour à Immich. Les diapositives existantes défilent entre deux actualisations.",
+        "de": "Wie oft die Integration Immich erneut nach dem Album oder den heutigen Erinnerungen fragt. Die vorhandenen Bilder laufen zwischen zwei Aktualisierungen weiter.",
+        "es": "Frecuencia con la que la integración vuelve a pedir a Immich el álbum o los recuerdos del día. Las fotos ya cargadas siguen pasando entre dos actualizaciones."
       },
       "required": true,
       "default": 3600,
@@ -155,11 +197,15 @@
       "type": "number",
       "label": {
         "en": "Maximum images",
-        "fr": "Nombre maximal d’images"
+        "fr": "Nombre maximal d’images",
+        "de": "Maximale Bildanzahl",
+        "es": "Número máximo de imágenes"
       },
       "description": {
         "en": "Caps large albums to keep the integration responsive. The newest images are selected unless random order is enabled.",
-        "fr": "Limite les grands albums pour préserver la réactivité. Les images les plus récentes sont sélectionnées, sauf si l’ordre aléatoire est activé."
+        "fr": "Limite les grands albums pour préserver la réactivité. Les images les plus récentes sont sélectionnées, sauf si l’ordre aléatoire est activé.",
+        "de": "Begrenzt große Alben, damit die Integration reaktionsschnell bleibt. Die neuesten Bilder werden gewählt, außer die zufällige Reihenfolge ist aktiviert.",
+        "es": "Limita los álbumes grandes para que la integración siga ágil. Se eligen las imágenes más recientes, salvo si el orden aleatorio está activado."
       },
       "required": true,
       "default": 200,
@@ -171,11 +217,15 @@
       "type": "boolean",
       "label": {
         "en": "Randomize images",
-        "fr": "Mélanger les images"
+        "fr": "Mélanger les images",
+        "de": "Bilder mischen",
+        "es": "Mezclar las imágenes"
       },
       "description": {
         "en": "When disabled, the slideshow starts with the most recent image.",
-        "fr": "Lorsqu’il est désactivé, le diaporama commence par l’image la plus récente."
+        "fr": "Lorsqu’il est désactivé, le diaporama commence par l’image la plus récente.",
+        "de": "Wenn deaktiviert, beginnt die Diashow mit dem neuesten Bild.",
+        "es": "Si está desactivado, el pase empieza por la imagen más reciente."
       },
       "required": false,
       "default": false
@@ -185,25 +235,89 @@
       "type": "boolean",
       "label": {
         "en": "Show Immich caption",
-        "fr": "Afficher la légende Immich"
+        "fr": "Afficher la légende Immich",
+        "de": "Immich-Bildunterschrift anzeigen",
+        "es": "Mostrar la leyenda de Immich"
       },
       "description": {
         "en": "Adds the Immich description, location and capture date when available in a readable band at the bottom of each image.",
-        "fr": "Ajoute la description, le lieu et la date de prise de vue Immich lorsqu’ils sont disponibles, dans un bandeau lisible au bas de chaque image."
+        "fr": "Ajoute la description, le lieu et la date de prise de vue Immich lorsqu’ils sont disponibles, dans un bandeau lisible au bas de chaque image.",
+        "de": "Fügt die Immich-Beschreibung, den Ort und das Aufnahmedatum, sofern vorhanden, in einem gut lesbaren Band am unteren Bildrand hinzu.",
+        "es": "Añade la descripción, el lugar y la fecha de la foto de Immich, si existen, en una franja legible en la parte inferior de cada imagen."
       },
       "required": false,
       "default": false
+    },
+    {
+      "key": "caption_language",
+      "type": "select",
+      "label": {
+        "en": "Caption language",
+        "fr": "Langue de la légende",
+        "de": "Sprache der Bildunterschrift",
+        "es": "Idioma de la leyenda"
+      },
+      "description": {
+        "en": "Language of the date in the caption burned into the image, and of the source name the scene action returns.",
+        "fr": "Langue de la date de la légende incrustée dans l’image, et du nom de la source renvoyé par l’action de scène.",
+        "de": "Sprache des Datums in der ins Bild eingefügten Bildunterschrift und des Quellnamens, den die Szenenaktion liefert.",
+        "es": "Idioma de la fecha de la leyenda incrustada en la imagen y del nombre del origen que devuelve la acción de escena."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     },
     {
       "key": "second_slideshow_intro",
       "type": "section",
       "label": {
         "en": "Slideshow 2 — connect Immich",
-        "fr": "Diaporama 2 — connecter Immich"
+        "fr": "Diaporama 2 — connecter Immich",
+        "de": "Diashow 2 — Immich verbinden",
+        "es": "Pase 2 — conectar Immich"
       },
       "description": {
         "en": "Optional. Configure this independent slideshow to display a different album, memories source, or Immich server on a second Gladys dashboard camera.",
-        "fr": "Optionnel. Configurez ce diaporama indépendant pour afficher un autre album, une autre source de souvenirs ou un autre serveur Immich sur une seconde caméra Gladys."
+        "fr": "Optionnel. Configurez ce diaporama indépendant pour afficher un autre album, une autre source de souvenirs ou un autre serveur Immich sur une seconde caméra Gladys.",
+        "de": "Optional. Richten Sie diese unabhängige Diashow ein, um ein anderes Album, andere Erinnerungen oder einen anderen Immich-Server auf einer zweiten Gladys-Dashboard-Kamera zu zeigen.",
+        "es": "Opcional. Configure este pase independiente para mostrar otro álbum, otros recuerdos u otro servidor Immich en una segunda cámara del dashboard de Gladys."
       }
     },
     {
@@ -211,15 +325,21 @@
       "type": "string",
       "label": {
         "en": "Immich server URL",
-        "fr": "URL du serveur Immich"
+        "fr": "URL du serveur Immich",
+        "de": "URL des Immich-Servers",
+        "es": "URL del servidor Immich"
       },
       "description": {
         "en": "The server used by the second slideshow. It may be the same as slideshow 1 or a different Immich instance.",
-        "fr": "Serveur utilisé par le second diaporama. Il peut être identique à celui du diaporama 1 ou pointer vers une autre instance Immich."
+        "fr": "Serveur utilisé par le second diaporama. Il peut être identique à celui du diaporama 1 ou pointer vers une autre instance Immich.",
+        "de": "Der Server der zweiten Diashow. Er kann derselbe wie bei Diashow 1 oder eine andere Immich-Instanz sein.",
+        "es": "El servidor del segundo pase. Puede ser el mismo que el del pase 1 u otra instancia de Immich."
       },
       "placeholder": {
         "en": "https://immich.example.net",
-        "fr": "https://immich.exemple.net"
+        "fr": "https://immich.exemple.net",
+        "de": "https://immich.beispiel.de",
+        "es": "https://immich.ejemplo.es"
       },
       "required": false
     },
@@ -228,11 +348,15 @@
       "type": "secret",
       "label": {
         "en": "Immich API key",
-        "fr": "Clé API Immich"
+        "fr": "Clé API Immich",
+        "de": "Immich-API-Schlüssel",
+        "es": "Clave API de Immich"
       },
       "placeholder": {
         "en": "Paste the API key",
-        "fr": "Collez la clé API"
+        "fr": "Collez la clé API",
+        "de": "API-Schlüssel einfügen",
+        "es": "Pegue la clave API"
       },
       "required": false
     },
@@ -241,11 +365,15 @@
       "type": "select",
       "label": {
         "en": "Photo source",
-        "fr": "Source des photos"
+        "fr": "Source des photos",
+        "de": "Fotoquelle",
+        "es": "Origen de las fotos"
       },
       "description": {
         "en": "Choose a specific album or Immich memories from this day in previous years for the second dashboard camera.",
-        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes pour la seconde caméra du dashboard."
+        "fr": "Choisissez un album précis ou les souvenirs Immich de cette date les années précédentes pour la seconde caméra du dashboard.",
+        "de": "Wählen Sie für die zweite Dashboard-Kamera ein bestimmtes Album oder die Immich-Erinnerungen an diesen Tag in den Vorjahren.",
+        "es": "Elija para la segunda cámara del dashboard un álbum concreto o los recuerdos de Immich de este día en años anteriores."
       },
       "required": false,
       "default": "album",
@@ -254,14 +382,18 @@
           "value": "album",
           "label": {
             "en": "Album",
-            "fr": "Album"
+            "fr": "Album",
+            "de": "Album",
+            "es": "Álbum"
           }
         },
         {
           "value": "memories",
           "label": {
             "en": "Memories — on this day",
-            "fr": "Souvenirs — ce jour-là"
+            "fr": "Souvenirs — ce jour-là",
+            "de": "Erinnerungen — an diesem Tag",
+            "es": "Recuerdos — tal día como hoy"
           }
         }
       ]
@@ -271,15 +403,21 @@
       "type": "string",
       "label": {
         "en": "Album UUIDs",
-        "fr": "UUID des albums"
+        "fr": "UUID des albums",
+        "de": "Album-UUIDs",
+        "es": "UUID de los álbumes"
       },
       "description": {
         "en": "Required only when the second source is Album. Enter one or more UUIDs separated by commas or line breaks. Leave it empty for Memories.",
-        "fr": "Requis uniquement lorsque la seconde source est Album. Saisissez un ou plusieurs UUID séparés par des virgules ou des retours à la ligne. Laissez vide pour Souvenirs."
+        "fr": "Requis uniquement lorsque la seconde source est Album. Saisissez un ou plusieurs UUID séparés par des virgules ou des retours à la ligne. Laissez vide pour Souvenirs.",
+        "de": "Nur erforderlich, wenn die zweite Quelle „Album“ ist. Geben Sie eine oder mehrere UUIDs ein, getrennt durch Kommas oder Zeilenumbrüche. Für Erinnerungen leer lassen.",
+        "es": "Solo es obligatorio si el segundo origen es Álbum. Introduzca uno o varios UUID separados por comas o saltos de línea. Déjelo vacío para Recuerdos."
       },
       "placeholder": {
         "en": "e.g. 1033b9e2-…, a490c2f0-…",
-        "fr": "ex. 1033b9e2-…, a490c2f0-…"
+        "fr": "ex. 1033b9e2-…, a490c2f0-…",
+        "de": "z. B. 1033b9e2-…, a490c2f0-…",
+        "es": "p. ej. 1033b9e2-…, a490c2f0-…"
       },
       "required": false
     },
@@ -288,11 +426,15 @@
       "type": "number",
       "label": {
         "en": "Slide interval (seconds)",
-        "fr": "Intervalle entre les photos (secondes)"
+        "fr": "Intervalle entre les photos (secondes)",
+        "de": "Bildwechsel-Intervall (Sekunden)",
+        "es": "Intervalo entre fotos (segundos)"
       },
       "description": {
         "en": "How long each image from the second slideshow stays on its dashboard camera.",
-        "fr": "Durée d’affichage de chaque image du second diaporama sur sa caméra du dashboard."
+        "fr": "Durée d’affichage de chaque image du second diaporama sur sa caméra du dashboard.",
+        "de": "Wie lange jedes Bild der zweiten Diashow auf ihrer Dashboard-Kamera bleibt.",
+        "es": "Tiempo que cada imagen del segundo pase permanece en su cámara del dashboard."
       },
       "required": false,
       "default": 60,
@@ -304,11 +446,15 @@
       "type": "number",
       "label": {
         "en": "Source refresh interval (seconds)",
-        "fr": "Intervalle d’actualisation de la source (secondes)"
+        "fr": "Intervalle d’actualisation de la source (secondes)",
+        "de": "Aktualisierung der Quelle (Sekunden)",
+        "es": "Actualización del origen (segundos)"
       },
       "description": {
         "en": "How often the second slideshow asks Immich for its album or today’s memories.",
-        "fr": "Fréquence à laquelle le second diaporama redemande son album ou les souvenirs du jour à Immich."
+        "fr": "Fréquence à laquelle le second diaporama redemande son album ou les souvenirs du jour à Immich.",
+        "de": "Wie oft die zweite Diashow Immich nach ihrem Album oder den heutigen Erinnerungen fragt.",
+        "es": "Frecuencia con la que el segundo pase pide a Immich su álbum o los recuerdos del día."
       },
       "required": false,
       "default": 3600,
@@ -320,11 +466,15 @@
       "type": "number",
       "label": {
         "en": "Maximum images",
-        "fr": "Nombre maximal d’images"
+        "fr": "Nombre maximal d’images",
+        "de": "Maximale Bildanzahl",
+        "es": "Número máximo de imágenes"
       },
       "description": {
         "en": "Caps the second slideshow source to keep the integration responsive.",
-        "fr": "Limite la source du second diaporama pour préserver la réactivité."
+        "fr": "Limite la source du second diaporama pour préserver la réactivité.",
+        "de": "Begrenzt die Quelle der zweiten Diashow, damit die Integration reaktionsschnell bleibt.",
+        "es": "Limita el origen del segundo pase para que la integración siga ágil."
       },
       "required": false,
       "default": 200,
@@ -336,11 +486,15 @@
       "type": "boolean",
       "label": {
         "en": "Randomize images",
-        "fr": "Mélanger les images"
+        "fr": "Mélanger les images",
+        "de": "Bilder mischen",
+        "es": "Mezclar las imágenes"
       },
       "description": {
         "en": "Randomizes only the images shown by the second slideshow.",
-        "fr": "Mélange uniquement les images affichées par le second diaporama."
+        "fr": "Mélange uniquement les images affichées par le second diaporama.",
+        "de": "Mischt nur die Bilder der zweiten Diashow.",
+        "es": "Mezcla solo las imágenes del segundo pase."
       },
       "required": false,
       "default": false
@@ -350,14 +504,74 @@
       "type": "boolean",
       "label": {
         "en": "Show Immich caption",
-        "fr": "Afficher la légende Immich"
+        "fr": "Afficher la légende Immich",
+        "de": "Immich-Bildunterschrift anzeigen",
+        "es": "Mostrar la leyenda de Immich"
       },
       "description": {
         "en": "Adds the Immich description, location and capture date to images from the second slideshow when available.",
-        "fr": "Ajoute la description, le lieu et la date de prise de vue Immich aux images du second diaporama lorsqu’ils sont disponibles."
+        "fr": "Ajoute la description, le lieu et la date de prise de vue Immich aux images du second diaporama lorsqu’ils sont disponibles.",
+        "de": "Fügt den Bildern der zweiten Diashow die Immich-Beschreibung, den Ort und das Aufnahmedatum hinzu, sofern vorhanden.",
+        "es": "Añade a las imágenes del segundo pase la descripción, el lugar y la fecha de la foto de Immich, si existen."
       },
       "required": false,
       "default": false
+    },
+    {
+      "key": "caption_language_2",
+      "type": "select",
+      "label": {
+        "en": "Caption language",
+        "fr": "Langue de la légende",
+        "de": "Sprache der Bildunterschrift",
+        "es": "Idioma de la leyenda"
+      },
+      "description": {
+        "en": "Language of the caption date and of the source name for the second slideshow.",
+        "fr": "Langue de la date de la légende et du nom de la source pour le second diaporama.",
+        "de": "Sprache des Datums der Bildunterschrift und des Quellnamens für die zweite Diashow.",
+        "es": "Idioma de la fecha de la leyenda y del nombre del origen para el segundo pase."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
@@ -365,7 +579,9 @@
       "key": "test_connection",
       "label": {
         "en": "Test Immich connection",
-        "fr": "Tester la connexion Immich"
+        "fr": "Tester la connexion Immich",
+        "de": "Immich-Verbindung testen",
+        "es": "Probar la conexión con Immich"
       },
       "timeout_seconds": 30
     },
@@ -373,7 +589,9 @@
       "key": "list_albums",
       "label": {
         "en": "List Immich albums",
-        "fr": "Lister les albums Immich"
+        "fr": "Lister les albums Immich",
+        "de": "Immich-Alben auflisten",
+        "es": "Listar los álbumes de Immich"
       },
       "timeout_seconds": 30
     },
@@ -381,7 +599,9 @@
       "key": "refresh_now",
       "label": {
         "en": "Refresh slideshow 1 now",
-        "fr": "Actualiser le diaporama 1 maintenant"
+        "fr": "Actualiser le diaporama 1 maintenant",
+        "de": "Diashow 1 jetzt aktualisieren",
+        "es": "Actualizar el pase 1 ahora"
       },
       "timeout_seconds": 30
     },
@@ -389,7 +609,9 @@
       "key": "test_connection_2",
       "label": {
         "en": "Test slideshow 2 Immich connection",
-        "fr": "Tester la connexion Immich du diaporama 2"
+        "fr": "Tester la connexion Immich du diaporama 2",
+        "de": "Immich-Verbindung von Diashow 2 testen",
+        "es": "Probar la conexión Immich del pase 2"
       },
       "timeout_seconds": 30
     },
@@ -397,7 +619,9 @@
       "key": "list_albums_2",
       "label": {
         "en": "List slideshow 2 Immich albums",
-        "fr": "Lister les albums Immich du diaporama 2"
+        "fr": "Lister les albums Immich du diaporama 2",
+        "de": "Immich-Alben von Diashow 2 auflisten",
+        "es": "Listar los álbumes Immich del pase 2"
       },
       "timeout_seconds": 30
     },
@@ -405,7 +629,9 @@
       "key": "refresh_now_2",
       "label": {
         "en": "Refresh slideshow 2 now",
-        "fr": "Actualiser le diaporama 2 maintenant"
+        "fr": "Actualiser le diaporama 2 maintenant",
+        "de": "Diashow 2 jetzt aktualisieren",
+        "es": "Actualizar el pase 2 ahora"
       },
       "timeout_seconds": 30
     }
@@ -415,11 +641,15 @@
       "key": "show_next_photo",
       "label": {
         "en": "Show the next Immich photo",
-        "fr": "Afficher la photo Immich suivante"
+        "fr": "Afficher la photo Immich suivante",
+        "de": "Nächstes Immich-Foto anzeigen",
+        "es": "Mostrar la siguiente foto de Immich"
       },
       "description": {
         "en": "Puts the next photo on a slideshow camera now. Follow it with “Send camera image” to send that photo in a message.",
-        "fr": "Affiche tout de suite la photo suivante sur une caméra de diaporama. Enchaînez avec « Envoyer l’image de la caméra » pour l’envoyer par message."
+        "fr": "Affiche tout de suite la photo suivante sur une caméra de diaporama. Enchaînez avec « Envoyer l’image de la caméra » pour l’envoyer par message.",
+        "de": "Zeigt sofort das nächste Foto auf einer Diashow-Kamera. Mit „Kamerabild senden“ danach verschicken Sie dieses Foto in einer Nachricht.",
+        "es": "Muestra ahora la siguiente foto en una cámara de pase. Añada después «Enviar la imagen de la cámara» para enviarla en un mensaje."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -429,7 +659,9 @@
           "source": "devices",
           "label": {
             "en": "Slideshow camera",
-            "fr": "Caméra du diaporama"
+            "fr": "Caméra du diaporama",
+            "de": "Diashow-Kamera",
+            "es": "Cámara del pase"
           },
           "required": true
         },
@@ -438,11 +670,15 @@
           "type": "boolean",
           "label": {
             "en": "Re-read the Immich source first",
-            "fr": "Relire d’abord la source Immich"
+            "fr": "Relire d’abord la source Immich",
+            "de": "Zuerst die Immich-Quelle neu laden",
+            "es": "Releer antes el origen de Immich"
           },
           "description": {
             "en": "Fetches the album or today’s memories again before choosing the photo.",
-            "fr": "Redemande l’album ou les souvenirs du jour avant de choisir la photo."
+            "fr": "Redemande l’album ou les souvenirs du jour avant de choisir la photo.",
+            "de": "Lädt das Album oder die heutigen Erinnerungen neu, bevor das Foto gewählt wird.",
+            "es": "Vuelve a pedir el álbum o los recuerdos del día antes de elegir la foto."
           },
           "default": false
         }
@@ -453,7 +689,9 @@
           "type": "boolean",
           "label": {
             "en": "Photo displayed",
-            "fr": "Photo affichée"
+            "fr": "Photo affichée",
+            "de": "Foto angezeigt",
+            "es": "Foto mostrada"
           }
         },
         {
@@ -461,7 +699,9 @@
           "type": "string",
           "label": {
             "en": "Photo file name",
-            "fr": "Nom du fichier de la photo"
+            "fr": "Nom du fichier de la photo",
+            "de": "Dateiname des Fotos",
+            "es": "Nombre del archivo de la foto"
           }
         },
         {
@@ -469,7 +709,9 @@
           "type": "string",
           "label": {
             "en": "Album or memories",
-            "fr": "Album ou souvenirs"
+            "fr": "Album ou souvenirs",
+            "de": "Album oder Erinnerungen",
+            "es": "Álbum o recuerdos"
           }
         }
       ]
@@ -480,11 +722,15 @@
       "key": "immich_photo",
       "label": {
         "en": "Immich photo",
-        "fr": "Photo Immich"
+        "fr": "Photo Immich",
+        "de": "Immich-Foto",
+        "es": "Foto de Immich"
       },
       "description": {
         "en": "The photo on a slideshow camera, its caption and state, with next and refresh buttons.",
-        "fr": "La photo d’une caméra de diaporama, sa légende et son état, avec suivante et actualiser."
+        "fr": "La photo d’une caméra de diaporama, sa légende et son état, avec suivante et actualiser.",
+        "de": "Das Foto einer Diashow-Kamera, Bildunterschrift und Status, mit Weiter- und Aktualisieren-Tasten.",
+        "es": "La foto de una cámara de pase, su leyenda y su estado, con botones siguiente y actualizar."
       },
       "icon": "image",
       "settings": [
@@ -494,7 +740,9 @@
           "source": "devices",
           "label": {
             "en": "Slideshow camera",
-            "fr": "Caméra du diaporama"
+            "fr": "Caméra du diaporama",
+            "de": "Diashow-Kamera",
+            "es": "Cámara del pase"
           },
           "required": true
         }

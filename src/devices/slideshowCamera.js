@@ -14,6 +14,7 @@ import {
   validateConfig,
   validateConnectionConfig,
 } from '../config.js';
+import { inLanguage } from '../i18n.js';
 import { EmptyPhotoSourceError, ImmichSlideshow } from '../slideshow.js';
 import { transportForUrl } from '../transport.js';
 
@@ -36,23 +37,31 @@ export function errorMessage(error) {
     return {
       en: 'The selected Immich source contains no images.',
       fr: 'La source Immich sélectionnée ne contient aucune image.',
+      de: 'Die gewählte Immich-Quelle enthält keine Bilder.',
+      es: 'El origen de Immich seleccionado no contiene imágenes.',
     };
   }
   if (error?.status === 401 || error?.status === 403) {
     return {
       en: 'Immich rejected the API key or its permissions.',
       fr: 'Immich a refusé la clé API ou ses permissions.',
+      de: 'Immich hat den API-Schlüssel oder seine Berechtigungen abgelehnt.',
+      es: 'Immich ha rechazado la clave API o sus permisos.',
     };
   }
   if (isNetworkError(error)) {
     return {
       en: 'The Immich server is unreachable. Check its URL and network access from Gladys.',
       fr: 'Le serveur Immich est inaccessible. Vérifiez son URL et l’accès réseau depuis Gladys.',
+      de: 'Der Immich-Server ist nicht erreichbar. Prüfen Sie seine URL und den Netzwerkzugang von Gladys aus.',
+      es: 'No se puede acceder al servidor Immich. Compruebe su URL y el acceso de red desde Gladys.',
     };
   }
   return {
     en: 'Unable to retrieve an Immich preview. See the integration logs for details.',
     fr: 'Impossible de récupérer un aperçu Immich. Consultez les journaux de l’intégration.',
+    de: 'Es konnte keine Immich-Vorschau abgerufen werden. Details in den Protokollen der Integration.',
+    es: 'No se pudo obtener una vista previa de Immich. Consulte los registros de la integración.',
   };
 }
 
@@ -62,7 +71,8 @@ export function errorMessage(error) {
  * asset, or the caption band switched on or off.
  */
 export function widgetImageKey(profileNumber, slide, config) {
-  const caption = getSlideshowConfig(config, profileNumber).show_caption ? 'c' : '';
+  const profile = getSlideshowConfig(config, profileNumber);
+  const caption = profile.show_caption ? `c${profile.caption_language}` : '';
   const assetId = String(slide.id)
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, '-')
@@ -129,7 +139,7 @@ export function createSlideshowCamera({
     const ids = gladys.externalIds(DEVICE_TYPE, platformDeviceId);
     await gladys.publishCameraImage(ids.device, slide.image);
     logger.info(
-      `Published “${slide.originalFileName || slide.id}” from ${slide.sourceName} on ${label}`,
+      `Published “${slide.originalFileName || slide.id}” from ${inLanguage(slide.sourceName, 'en')} on ${label}`,
     );
     return remember(slide, config);
   }
@@ -170,7 +180,7 @@ export function createSlideshowCamera({
       assertConfigured(config);
       const slide = await slideshow.next(profile);
       logger.info(
-        `On-demand slide “${slide.originalFileName || slide.id}” from ${slide.sourceName} on ${label}`,
+        `On-demand slide “${slide.originalFileName || slide.id}” from ${inLanguage(slide.sourceName, 'en')} on ${label}`,
       );
       remember(slide, config);
       return slide.image;
@@ -258,6 +268,8 @@ export function createSlideshowCamera({
       return {
         en: `Immich connection successful. ${albumCount} album${albumCount === 1 ? '' : 's'} found.`,
         fr: `Connexion Immich réussie. ${albumCount} album${albumCount === 1 ? '' : 's'} trouvé${albumCount === 1 ? '' : 's'}.`,
+        de: `Immich-Verbindung erfolgreich. ${albumCount} ${albumCount === 1 ? 'Album' : 'Alben'} gefunden.`,
+        es: `Conexión con Immich correcta. ${albumCount} ${albumCount === 1 ? 'álbum encontrado' : 'álbumes encontrados'}.`,
       };
     },
 
@@ -278,6 +290,8 @@ export function createSlideshowCamera({
       return {
         en: `Found ${albums.length} album${albums.length === 1 ? '' : 's'}. Copy the UUID of the chosen album:\n${lines.join('\n')}${suffix}`,
         fr: `${albums.length} album${albums.length === 1 ? '' : 's'} trouvé${albums.length === 1 ? '' : 's'}. Copiez l’UUID de l’album choisi :\n${lines.join('\n')}${suffix}`,
+        de: `${albums.length} ${albums.length === 1 ? 'Album' : 'Alben'} gefunden. Kopieren Sie die UUID des gewählten Albums:\n${lines.join('\n')}${suffix}`,
+        es: `${albums.length} ${albums.length === 1 ? 'álbum encontrado' : 'álbumes encontrados'}. Copie el UUID del álbum elegido:\n${lines.join('\n')}${suffix}`,
       };
     },
 
@@ -289,6 +303,8 @@ export function createSlideshowCamera({
       return {
         en: `Immich source refreshed. Displaying ${slide.originalFileName || 'the next image'}.`,
         fr: `Source Immich actualisée. Affichage de ${slide.originalFileName || 'la prochaine image'}.`,
+        de: `Immich-Quelle aktualisiert. Angezeigt wird ${slide.originalFileName || 'das nächste Bild'}.`,
+        es: `Origen de Immich actualizado. Mostrando ${slide.originalFileName || 'la siguiente imagen'}.`,
       };
     },
 

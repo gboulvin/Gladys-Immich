@@ -54,6 +54,7 @@ test('keeps the second slideshow profile independent from the first', () => {
     slide_interval_2: '120',
     random_order_2: 'true',
     show_caption_2: true,
+    caption_language_2: 'de',
   });
 
   assert.deepEqual(getSlideshowConfig(config, 1), {
@@ -67,6 +68,7 @@ test('keeps the second slideshow profile independent from the first', () => {
     max_assets: 200,
     random_order: false,
     show_caption: false,
+    caption_language: 'fr',
   });
   assert.deepEqual(getSlideshowConfig(config, 2), {
     immich_url: 'https://second-immich.example.test',
@@ -79,6 +81,7 @@ test('keeps the second slideshow profile independent from the first', () => {
     max_assets: 200,
     random_order: true,
     show_caption: true,
+    caption_language: 'de',
   });
 });
 
@@ -111,4 +114,10 @@ test('normalizes a comma- or line-separated list of album UUIDs', () => {
 
   assert.deepEqual(config.album_ids, ['album-one', 'album-two', 'album-three']);
   assert.equal(config.album_id, 'album-one, album-two, album-three');
+});
+
+test('keeps a supported caption language, and falls back to French otherwise', () => {
+  assert.equal(normalizeConfig({ caption_language: 'es' }).caption_language, 'es');
+  assert.equal(normalizeConfig({ caption_language: 'it' }).caption_language, 'fr');
+  assert.equal(normalizeConfig({}).caption_language_2, 'fr');
 });

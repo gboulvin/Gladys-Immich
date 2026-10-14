@@ -19,6 +19,7 @@ The integration is listed in the **multimedia** catalog category.
 | **Images**             | `IMAGE` assets only; videos are deliberately skipped.                                                                                            |
 | **Controlled quality** | Oriented Immich preview, optional caption band at the bottom, then resized and JPEG-compressed under the Gladys camera payload limit.            |
 | **Performance**        | Asset list capped at 1–500 images and refreshed independently of the slide interval; only the preview of the photo on display is fetched.        |
+| **Languages**          | English, French, German and Spanish: settings, actions, messages, widget, scene action and documentation.                                        |
 | **Privacy**            | The API key is a Gladys `secret` field, never sent to the dashboard browser.                                                                     |
 | **Control**            | Connection test, album list, immediate refresh, connection status that recovers on its own, localized errors.                                    |
 
@@ -42,6 +43,7 @@ Keeping the HTTP client, the source resolution and the slideshow engine apart ke
 | [`index.js`](./index.js)                                             | Creates the SDK client, registers the app, connects and shuts down cleanly.   |
 | [`src/app.js`](./src/app.js)                                         | SDK wiring: discovery, images, actions, configuration, status and badges.     |
 | [`src/config.js`](./src/config.js)                                   | Defaults, limits and localized validation messages.                           |
+| [`src/i18n.js`](./src/i18n.js)                                       | Supported languages and per-language text helpers.                            |
 | [`src/immichClient.js`](./src/immichClient.js)                       | Authenticated HTTP requests, timeouts and explicit Immich errors.             |
 | [`src/photoProvider.js`](./src/photoProvider.js)                     | Albums, memories, video filtering, deduplication, order and caption metadata. |
 | [`src/slideshow.js`](./src/slideshow.js)                             | List cache, forced refresh and slide rotation.                                |
@@ -54,9 +56,9 @@ Keeping the HTTP client, the source resolution and the slideshow engine apart ke
 
 ## User setup
 
-In Immich, create an API key with the `album.read`, `asset.read`, `asset.view` and `memory.read` permissions. In Gladys, open the integration and enter your server URL, for example `http://192.168.1.20:2283`, and the API key. For albums, use **List Immich albums**: it returns each album name, UUID and asset count; enter the chosen UUIDs in the form, separated by commas or line breaks. Enable **Show Immich caption** to burn the available description, location and capture date into a band at the bottom of the image. Avoid `localhost`: it points to the integration’s isolated container, not to your Immich server.
+In Immich, create an API key with the `album.read`, `asset.read`, `asset.view` and `memory.read` permissions. In Gladys, open the integration and enter your server URL, for example `http://192.168.1.20:2283`, and the API key. For albums, use **List Immich albums**: it returns each album name, UUID and asset count; enter the chosen UUIDs in the form, separated by commas or line breaks. Enable **Show Immich caption** to burn the available description, location and capture date into a band at the bottom of the image, and pick its **Caption language**. Avoid `localhost`: it points to the integration’s isolated container, not to your Immich server.
 
-Once saved, run **Test Immich connection**, create the **Immich slideshow** device in the **Discovery** tab, then add that camera to a dashboard. Fill in the **Slideshow 2** fields to create a second, fully independent camera. See the full user documentation: [English](./docs/en.md) and [français](./docs/fr.md).
+Once saved, run **Test Immich connection**, create the **Immich slideshow** device in the **Discovery** tab, then add that camera to a dashboard. Fill in the **Slideshow 2** fields to create a second, fully independent camera. See the full user documentation: [English](./docs/en.md), [français](./docs/fr.md), [Deutsch](./docs/de.md) and [español](./docs/es.md).
 
 > The memories source changes every day. Keep a reasonable source refresh interval — one hour by default — and use **Refresh slideshow now** to apply a change immediately.
 
