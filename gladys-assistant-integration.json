@@ -8,8 +8,8 @@
     "de": "Zeigt ein Immich-Album oder Erinnerungen als Diashow einer Gladys-Dashboard-Kamera.",
     "es": "Muestra un álbum o los recuerdos de Immich como pase de fotos en el dashboard de Gladys."
   },
-  "version": "0.3.0",
-  "docker_image": "ghcr.io/gboulvin/gladys-immich:0.3.0",
+  "version": "0.3.1",
+  "docker_image": "ghcr.io/gboulvin/gladys-immich:0.3.1",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-Immich/main/cover.jpg?v=0.1.7-cover-800x534",
   "categories": ["multimedia"],

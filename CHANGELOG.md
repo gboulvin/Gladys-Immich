@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-22
+
 ### Security
 
 - `brace-expansion`, pulled in by ESLint, raised to 5.0.12 against the
@@ -86,6 +88,7 @@ the notes of the version's GitHub Release.
 - The integration can write to `/data`: the image creates the directory owned by
   the `node` user, a new Docker volume was owned by root.
 
-[Unreleased]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/gboulvin/Gladys-Immich/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/gboulvin/Gladys-Immich/releases/tag/v0.2.0
