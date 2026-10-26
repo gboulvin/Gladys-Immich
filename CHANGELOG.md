@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-26
+
 ### Changed
 
 - Requires Gladys 5.3.0 or later: the manifest declares search keywords for
@@ -94,7 +96,8 @@ the notes of the version's GitHub Release.
 - The integration can write to `/data`: the image creates the directory owned by
   the `node` user, a new Docker volume was owned by root.
 
-[Unreleased]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/gboulvin/Gladys-Immich/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/gboulvin/Gladys-Immich/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/gboulvin/Gladys-Immich/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/gboulvin/Gladys-Immich/releases/tag/v0.2.0
