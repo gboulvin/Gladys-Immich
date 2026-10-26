@@ -4,7 +4,7 @@
 
 Diese externe Gladys-Integration macht aus einem oder mehreren **Immich-Alben** oder der Sammlung **Erinnerungen — an diesem Tag** eine virtuelle Kamera. Fügen Sie diese Kamera dem Gladys-Dashboard hinzu, um eine automatisch wechselnde Foto-Diashow anzuzeigen. Die Fotos bleiben auf dem konfigurierten Immich-Server: Die Integration ruft nur die Vorschaubilder von Immich ab und lädt nie die Originale herunter.
 
-Die Integration erfordert Gladys **5.1.0 oder neuer**. Jede Diashow ist eine virtuelle Kamera, die in einer Kamera-Box des Dashboards verwendet werden kann. Die Integration fügt außerdem ein **Dashboard-Widget „Immich-Foto“** und eine **Szenenaktion** hinzu, die das nächste Foto anzeigt. Sie ist auf Englisch, Französisch, Deutsch und Spanisch verfügbar.
+Die Integration erfordert Gladys **5.3.0 oder neuer**. Jede Diashow ist eine virtuelle Kamera, die in einer Kamera-Box des Dashboards verwendet werden kann. Die Integration fügt außerdem ein **Dashboard-Widget „Immich-Foto“** und eine **Szenenaktion** hinzu, die das nächste Foto anzeigt. Sie ist auf Englisch, Französisch, Deutsch und Spanisch verfügbar.
 
 ## Voraussetzungen
 

@@ -4,7 +4,7 @@
 
 This external Gladys integration turns one or more **Immich albums** or the **Memories — on this day** collection into a virtual camera. Add that camera to the Gladys dashboard to display an automatically changing photo slideshow. Photos remain on the configured Immich server: the integration requests only Immich preview renditions and never downloads originals.
 
-The integration requires Gladys **5.1.0 or newer**. Each slideshow is a virtual camera, usable in a dashboard camera box. The integration also adds an **Immich photo dashboard widget** and a **scene action** that shows the next photo. It is available in English, French, German and Spanish.
+The integration requires Gladys **5.3.0 or newer**. Each slideshow is a virtual camera, usable in a dashboard camera box. The integration also adds an **Immich photo dashboard widget** and a **scene action** that shows the next photo. It is available in English, French, German and Spanish.
 
 ## Prerequisites
 

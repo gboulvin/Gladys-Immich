@@ -4,7 +4,7 @@
 
 Cette intégration externe Gladys transforme un ou plusieurs **albums Immich** ou la collection **Souvenirs — ce jour-là** en caméra virtuelle. Ajoutez cette caméra au dashboard Gladys pour afficher un diaporama de photos qui change automatiquement. Les photos restent sur votre serveur Immich : l’intégration ne demande que les aperçus Immich et ne télécharge jamais les originaux.
 
-L’intégration nécessite Gladys **5.1.0 ou version ultérieure**. Chaque diaporama est une caméra virtuelle, utilisable dans une boîte caméra du dashboard. L’intégration ajoute aussi un **widget Photo Immich** pour le dashboard et une **action de scène** qui affiche la photo suivante. Elle est disponible en anglais, français, allemand et espagnol.
+L’intégration nécessite Gladys **5.3.0 ou version ultérieure**. Chaque diaporama est une caméra virtuelle, utilisable dans une boîte caméra du dashboard. L’intégration ajoute aussi un **widget Photo Immich** pour le dashboard et une **action de scène** qui affiche la photo suivante. Elle est disponible en anglais, français, allemand et espagnol.
 
 ## Prérequis
 
