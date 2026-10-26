@@ -24,7 +24,7 @@ test('declares an installable Gladys device integration', () => {
   assert.equal(manifest.manifest_version, 1);
   assert.equal(manifest.type, 'device');
   assert.match(manifest.name, /^Immich Slideshow$/);
-  assert.match(manifest.gladys_version, /^>=5\.1\.0$/);
+  assert.match(manifest.gladys_version, /^>=5\.3\.0$/);
   assert.match(manifest.docker_image, /^ghcr\.io\/.+:.+$/);
   assert.match(manifest.cover_image, /^https:\/\//);
   assert.ok(manifest.description.en.length >= 10);

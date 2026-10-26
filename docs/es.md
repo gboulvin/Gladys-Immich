@@ -4,7 +4,7 @@
 
 Esta integración externa de Gladys convierte uno o varios **álbumes de Immich** o la colección **Recuerdos — tal día como hoy** en una cámara virtual. Añada esa cámara al dashboard de Gladys para mostrar un pase de fotos que cambia automáticamente. Las fotos se quedan en el servidor Immich configurado: la integración solo pide las vistas previas de Immich y nunca descarga los originales.
 
-La integración requiere Gladys **5.1.0 o posterior**. Cada pase de fotos es una cámara virtual, utilizable en un bloque de cámara del dashboard. La integración añade también un **widget de dashboard «Foto de Immich»** y una **acción de escena** que muestra la foto siguiente. Está disponible en inglés, francés, alemán y español.
+La integración requiere Gladys **5.3.0 o posterior**. Cada pase de fotos es una cámara virtual, utilizable en un bloque de cámara del dashboard. La integración añade también un **widget de dashboard «Foto de Immich»** y una **acción de escena** que muestra la foto siguiente. Está disponible en inglés, francés, alemán y español.
 
 ## Requisitos previos
 

@@ -2,7 +2,7 @@
 
 > **A Gladys external integration that shows one or more Immich albums, or the “on this day” memories, as a slideshow on a virtual dashboard camera.**
 
-This project started from the [official Gladys JavaScript external-integration template][1]. It is a `device` integration that uses the camera image channel to run a slideshow on the Gladys **5.1+** dashboard. It also provides an **Immich photo dashboard widget** (current photo, caption, state, buttons) and a **scene action** (show the next photo), two capabilities of the integration SDK 0.15 [2] [3].
+This project started from the [official Gladys JavaScript external-integration template][1]. It is a `device` integration that uses the camera image channel to run a slideshow on the Gladys **5.3+** dashboard. It also provides an **Immich photo dashboard widget** (current photo, caption, state, buttons) and a **scene action** (show the next photo), two capabilities of the integration SDK 0.16 [2] [3].
 
 The integration is listed in the **multimedia** catalog category.
 
